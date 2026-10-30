@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../../backend/index.php/api">
+    <title>My profile · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/app.css">
+    <script src="../js/app.js" defer></script>
+</head>
+
+<body data-page="profile" data-root="../" data-requires-auth="true">
+    <main class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <h2>My account</h2>
+            <a class="active" href="profile.html"><i class="fa-regular fa-user"></i> Profile</a>
+            <a id="profile-dashboard-link" href="../index.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="../events.html"><i class="fa-solid fa-compass"></i> Explore events</a>
+        </aside>
+        <section class="dashboard-main">
+            <p class="section-kicker">Account details</p>
+            <h1 class="dashboard-title">My profile</h1>
+            <p class="section-subtitle">Your account information and access role.</p>
+            <section class="profile-panel" id="profile-details" aria-label="Profile information">
+                <div class="profile-identity">
+                    <div class="profile-avatar" id="profile-initials" aria-hidden="true"></div>
+                    <div>
+                        <p class="section-kicker">Gather member</p>
+                        <h2 id="profile-name">Loading profile…</h2>
+                    </div>
+                </div>
+                <dl class="profile-fields">
+                    <div>
+                        <dt>Email address</dt>
+                        <dd id="profile-email">Loading…</dd>
+                    </div>
+                    <div>
+                        <dt>Account role</dt>
+                        <dd id="profile-role">Loading…</dd>
+                    </div>
+                </dl>
+            </section>
+        </section>
+    </main>
+</body>
+
+</html>

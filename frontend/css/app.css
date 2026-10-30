@@ -904,6 +904,64 @@ img {
     font: 600 1.8rem var(--serif);
 }
 
+.profile-panel {
+    max-width: 760px;
+    margin-top: 28px;
+    padding: 30px;
+    border: 1px solid var(--line);
+    background: var(--white);
+}
+
+.profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 25px;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    background: var(--lime);
+    color: var(--ink);
+    font: 600 1.35rem var(--serif);
+}
+
+.profile-identity .section-kicker {
+    margin-bottom: 5px;
+}
+
+.profile-identity h2 {
+    margin: 0;
+    font: 600 1.7rem var(--serif);
+}
+
+.profile-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin: 0;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.profile-fields dt {
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.profile-fields dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+}
+
 .table-wrap {
     overflow-x: auto;
     margin: 20px 0 32px;
@@ -1255,6 +1313,14 @@ th {
 
     .dashboard-main {
         padding: 25px 16px;
+    }
+
+    .profile-panel {
+        padding: 22px 18px;
+    }
+
+    .profile-fields {
+        grid-template-columns: 1fr;
     }
 
     .dashboard-stats {

@@ -36,6 +36,8 @@ Gather is an academic event discovery and management application. Its frontend u
 | Demo checkout and booking history | Check venue capacity and schedule conflicts | Review bookings, payments, and contact messages |
 | Cancel eligible bookings | Receive in-site notifications |  |
 
+All signed-in roles can open the shared dashboard profile page to view their name, email address, and account role.
+
 The homepage shows the **three nearest upcoming events**. Explore Events displays the complete matching event list with search, category, city, and date filters.
 
 ## Technology
@@ -55,7 +57,7 @@ frontend/
 	login.html                Sign in
 	register.html             Attendee registration
 	booking.html              Ticket booking and demo checkout
-	dashboard/                Attendee, organizer, and admin dashboards
+	dashboard/                Shared profile plus attendee, organizer, and admin dashboards
 	css/                      Shared responsive styles
 	js/                       Fetch API and page behavior
 backend/
@@ -92,7 +94,7 @@ If the junction already exists, do not create it again. The current local setup 
 
 1. Open [phpMyAdmin](http://localhost/phpmyadmin).
 2. Select **Import** and import `backend/database/schema.sql`.
-3. Optionally import `backend/database/sample-data.sql` to add local demo accounts, venues, and 12 upcoming events. The sample inserts skip existing sample slugs, so re-importing adds no duplicate events.
+3. Optionally import `backend/database/sample-data.sql` to add local demo accounts, venues, and 12 upcoming events. Re-importing adds no duplicate events and resets the three demo accounts to the documented local password.
 
 ### 4. Check the database connection
 

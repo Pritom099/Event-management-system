@@ -54,10 +54,23 @@
         try { const data = await api('/auth/session'); csrf = data.csrf || ''; currentUser = data.user; }
         catch { currentUser = null; }
         const actions = document.querySelector('#nav-actions');
-        if (actions && currentUser) actions.innerHTML = `<a class="btn btn-outline btn-small" href="${root}dashboard/${currentUser.role === 'admin' ? 'admin' : currentUser.role === 'organizer' ? 'organizer' : 'user'}/index.html">Dashboard</a><button class="btn btn-small" id="logout-button">Sign out</button>`;
+        if (actions && currentUser) actions.innerHTML = `<a class="btn btn-outline btn-small" href="${root}dashboard/${currentUser.role === 'admin' ? 'admin' : currentUser.role === 'organizer' ? 'organizer' : 'user'}/index.html">Dashboard</a><a class="btn btn-outline btn-small" href="${root}dashboard/profile.html">Profile</a><button class="btn btn-small" id="logout-button">Sign out</button>`;
         document.querySelector('#logout-button')?.addEventListener('click', async () => { try { await api('/auth/logout', { method: 'POST' }); location.href = `${root}index.html`; } catch (error) { toast(error.message, true); } });
         const expectedRole = document.body.dataset.role;
         if (expectedRole && currentUser?.role !== expectedRole) location.replace(`${root}login.html`);
+        if (document.body.dataset.requiresAuth === 'true' && !currentUser) location.replace(`${root}login.html`);
+    }
+
+    function initProfile() {
+        const profile = document.querySelector('#profile-details');
+        if (!profile || !currentUser) return;
+        const roleNames = { attendee: 'Attendee', organizer: 'Event organizer', admin: 'Administrator' };
+        document.querySelector('#profile-name').textContent = currentUser.name;
+        document.querySelector('#profile-email').textContent = currentUser.email;
+        document.querySelector('#profile-role').textContent = roleNames[currentUser.role] || currentUser.role;
+        document.querySelector('#profile-initials').textContent = currentUser.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+        const dashboardLink = document.querySelector('#profile-dashboard-link');
+        if (dashboardLink) dashboardLink.href = `${root}dashboard/${currentUser.role === 'admin' ? 'admin' : currentUser.role === 'organizer' ? 'organizer' : 'user'}/index.html`;
     }
 
     async function loadEvents(target, params = new URLSearchParams(), endpoint = '/events') {
@@ -325,6 +338,6 @@
     document.addEventListener('DOMContentLoaded', async () => {
         setShell();
         await session();
-        initHome(); initEvents(); initDetails(); initAuth(); initBooking(); initUserDashboard(); initOrganizerDashboard(); initAdminDashboard(); initNotifications(); initContact();
+        initHome(); initEvents(); initDetails(); initAuth(); initBooking(); initUserDashboard(); initOrganizerDashboard(); initAdminDashboard(); initNotifications(); initContact(); initProfile();
     });
 })();

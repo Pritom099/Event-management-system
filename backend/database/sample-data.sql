@@ -6,6 +6,10 @@ INSERT IGNORE INTO users (name, email, password_hash, role) VALUES
   ('Gather Host', 'host@gather.local', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'organizer'),
   ('Gather Guest', 'guest@gather.local', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'attendee');
 
+UPDATE users
+SET password_hash = '$2y$12$lXPyXskGLb1uNHztxCB5Cup3E81YQZSfBxh4lOPNMo4PsczqYrADG', status = 'active'
+WHERE email IN ('admin@gather.local', 'host@gather.local', 'guest@gather.local');
+
 INSERT INTO venues (name, address, city, capacity, created_by)
 SELECT 'The Glasshouse', '18 Orchard Lane', 'Brooklyn', 180, u.id
 FROM users u
