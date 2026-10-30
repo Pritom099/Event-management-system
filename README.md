@@ -192,3 +192,6 @@ Use the demo accounts to check these flows in the browser:
 - No background service is configured for automated email/SMS reminders.
 - Payment refunds and production-grade analytics are not integrated.
 - The sample credentials and default XAMPP database configuration are not suitable for public deployment.
+
+Email: admin@gather.local
+Password: password
