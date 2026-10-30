@@ -17,7 +17,7 @@ function events_route(PDO $pdo, string $method, string $path): void
         respond(['events' => $statement->fetchAll()]);
     }
 
-    if ($method === 'GET' && $path === '/events') {
+    if ($method === 'GET' && in_array($path, ['/events', '/events/featured'], true)) {
         $where = ["e.status = 'published'", 'e.event_date >= CURDATE()'];
         $params = [];
         foreach (['category' => 'c.slug', 'city' => 'v.city'] as $key => $column) {
@@ -36,7 +36,10 @@ function events_route(PDO $pdo, string $method, string $path): void
             $where[] = 'e.event_date = ?';
             $params[] = $_GET['date'];
         }
-        $sql = 'SELECT e.id, e.title, e.slug, e.description, e.event_date, e.start_time, e.ticket_price, e.available_tickets, e.image_path, c.name AS category, c.slug AS category_slug, v.name AS venue, v.city, u.name AS organizer FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE ' . implode(' AND ', $where) . ' ORDER BY e.event_date, e.start_time LIMIT 100';
+        $sql = 'SELECT e.id, e.title, e.slug, e.description, e.event_date, e.start_time, e.ticket_price, e.available_tickets, e.image_path, c.name AS category, c.slug AS category_slug, v.name AS venue, v.city, u.name AS organizer FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE ' . implode(' AND ', $where) . ' ORDER BY e.event_date, e.start_time';
+        if ($path === '/events/featured') {
+            $sql .= ' LIMIT 3';
+        }
         $statement = $pdo->prepare($sql);
         $statement->execute($params);
         respond(['events' => $statement->fetchAll()]);

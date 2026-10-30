@@ -60,21 +60,21 @@
         if (expectedRole && currentUser?.role !== expectedRole) location.replace(`${root}login.html`);
     }
 
-    async function loadEvents(target, params = new URLSearchParams()) {
+    async function loadEvents(target, params = new URLSearchParams(), endpoint = '/events') {
         const container = document.querySelector(target);
         if (!container) return;
         container.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Finding your next event…</div>';
         try {
-            const data = await api(`/events${params.size ? `?${params}` : ''}`);
+            const data = await api(`${endpoint}${params.size ? `?${params}` : ''}`);
             const featuredCount = container.id === 'featured-events' ? document.querySelector('#featured-count') : null;
-            if (featuredCount) featuredCount.textContent = data.events.length ? `${data.events.length} upcoming events · keep scrolling to browse them all` : 'New events will appear here as hosts publish them.';
+            if (featuredCount) featuredCount.textContent = data.events.length ? `Showing ${data.events.length} upcoming events` : 'New events will appear here as hosts publish them.';
             container.innerHTML = data.events.length ? data.events.map(eventCard).join('') : '<div class="empty-state"><i class="fa-regular fa-calendar"></i><h3>No events match just yet</h3><p>Try a different search, or check back soon for something good.</p></div>';
         } catch (error) { container.innerHTML = `<div class="error-state">${escapeHtml(error.message)}<br>Check that the PHP API and database are running.</div>`; }
     }
 
     function initHome() {
         const featured = document.querySelector('#featured-events');
-        if (featured) loadEvents('#featured-events');
+        if (featured) loadEvents('#featured-events', new URLSearchParams(), '/events/featured');
         const form = document.querySelector('#home-search');
         form?.addEventListener('submit', event => { event.preventDefault(); const params = new URLSearchParams(new FormData(form)); location.href = `${root}events.html?${params}`; });
     }

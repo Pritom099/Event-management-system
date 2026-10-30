@@ -69,7 +69,9 @@ All endpoints return `{ "success": boolean, "message": string, "data": object }`
 | --- | --- | --- |
 | GET, POST | `/auth/session`, `/auth/register`, `/auth/login` | Session, attendee registration, login |
 | POST | `/auth/logout` | Authenticated session; CSRF required |
-| GET | `/events`, `/events/{id}`, `/categories` | Published-event discovery |
+| GET | `/events` | All matching published events for Explore; no homepage result limit |
+| GET | `/events/featured` | The three nearest upcoming published events for the homepage only |
+| GET | `/events/{id}`, `/categories` | Event details and category discovery |
 | GET | `/events/manage` | Organizer's own events or all events for admin |
 | POST, PUT, DELETE | `/events`, `/events/{id}` | Organizer-owned events; admin may manage all |
 | POST | `/events/{id}/image` | Organizer-owned image upload |
