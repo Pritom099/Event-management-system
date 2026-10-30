@@ -1,40 +1,121 @@
-# Gather | Event Management System
+# Gather
 
-Gather is an academic event discovery and management application with a plain HTML/CSS/JavaScript frontend and a Core PHP + MySQL JSON API. The frontend and backend are separate. No frontend or backend framework is used.
+<p align="center">
+	<strong>Event Management System</strong><br>
+	Discover local events. Save your seat. Host your next gathering.
+</p>
 
-## Stack
+<p align="center">
+	<img alt="PHP 8+" src="https://img.shields.io/badge/PHP-8%2B-777BB4?logo=php&logoColor=white">
+	<img alt="MySQL" src="https://img.shields.io/badge/MySQL-8%2B-4479A1?logo=mysql&logoColor=white">
+	<img alt="Vanilla JavaScript" src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=222">
+	<img alt="XAMPP" src="https://img.shields.io/badge/Local%20server-XAMPP-FB7A24?logo=apachefriends&logoColor=white">
+</p>
 
-- HTML5, CSS3, vanilla JavaScript, Fetch API, Font Awesome, Google Fonts
-- PHP 8.0+, PDO, PHP sessions
-- MySQL 8.0+ / MariaDB compatible InnoDB database
-- XAMPP / Apache for local development
+Gather is an academic event discovery and management application. Its frontend uses HTML, CSS, and vanilla JavaScript; its backend is a Core PHP JSON API backed by MySQL. The frontend and backend are kept separate, with no application framework.
 
-## Structure
+## Contents
+
+- [Features](#features)
+- [Technology](#technology)
+- [Project Layout](#project-layout)
+- [Quick Start](#quick-start)
+- [Demo Accounts](#demo-accounts)
+- [API Reference](#api-reference)
+- [Database](#database)
+- [Verification](#verification)
+- [Known Limitations](#known-limitations)
+
+## Features
+
+| Attendees | Organizers | Administrators |
+| --- | --- | --- |
+| Browse and filter published events | Submit and manage event listings | Review and approve submitted events |
+| View event details and schedules | Upload event images | View platform totals and reports |
+| Book tickets and view references | Create venues and view ticket sales | Manage users and event categories |
+| Demo checkout and booking history | Check venue capacity and schedule conflicts | Review bookings, payments, and contact messages |
+| Cancel eligible bookings | Receive in-site notifications |  |
+
+The homepage shows the **three nearest upcoming events**. Explore Events displays the complete matching event list with search, category, city, and date filters.
+
+## Technology
+
+- **Frontend:** HTML5, CSS3, vanilla JavaScript, Fetch API, Font Awesome, Google Fonts
+- **Backend:** PHP 8.0+, PDO, PHP sessions
+- **Database:** MySQL 8.0+ or compatible MariaDB with InnoDB
+- **Local environment:** XAMPP, Apache, MySQL
+
+## Project Layout
 
 ```text
-frontend/                 Public pages, dashboards, styles, and browser code
-backend/config/           PDO configuration
-backend/controllers/      Auth, events, bookings, payments, venues, admin
-backend/database/         Schema and optional local sample data
-backend/middleware/       JSON, session, CSRF, and role helpers
-backend/routes/           API dispatcher
-backend/uploads/          Organizer event images (created on first upload)
-backend/index.php         API entry point
+frontend/
+	index.html                Homepage
+	events.html               Search and filter all published events
+	event-details.html        Event details and booking entry point
+	login.html                Sign in
+	register.html             Attendee registration
+	booking.html              Ticket booking and demo checkout
+	dashboard/                Attendee, organizer, and admin dashboards
+	css/                      Shared responsive styles
+	js/                       Fetch API and page behavior
+backend/
+	config/                   PDO connection
+	controllers/              Authentication, event, booking, and admin logic
+	database/                 Schema and optional sample data
+	middleware/               JSON responses, sessions, CSRF, and authorization
+	routes/                   API dispatch
+	uploads/                  Organizer event images (created when needed)
+	index.php                 API entry point
+index.html                  Redirects to the frontend homepage
+README.md
 ```
 
-## XAMPP Setup
+## Quick Start
 
-1. Start Apache and MySQL from the XAMPP Control Panel.
-2. Make this project available beneath Apache's document root. The simplest setup is to copy the project folder to `C:\xampp\htdocs\event-management-system`. Alternatively, add an Apache `Alias` for this workspace folder and grant access to it.
-3. Open `http://localhost/phpmyadmin`, import `backend/database/schema.sql`, then optionally import `backend/database/sample-data.sql` for local test accounts and events. Re-importing the sample file adds ten more published future events (12 sample events total) without duplicating existing sample slugs.
-4. The default local database configuration is host `127.0.0.1`, database `event_management`, user `root`, and an empty password. For another setup, export `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` to the Apache/PHP process. `backend/.env.example` lists the variable names; PHP does not load `.env` files automatically.
-5. Open `http://localhost/event-management-system/` (or `http://localhost/event-management-system/frontend/`). The API is served by `backend/index.php/api/...`; the frontend uses a relative API base.
+### 1. Start XAMPP
 
-PHP needs the `pdo_mysql`, `fileinfo`, and `mbstring` extensions enabled. The Apache process must be allowed to create/write `backend/uploads` for event images. Do not expose the sample accounts or the default XAMPP database credentials on a public server.
+Start **Apache** and **MySQL** in the XAMPP Control Panel.
 
-### Local Demo Accounts
+### 2. Serve the project
 
-The optional sample SQL creates:
+Apache must be able to access the project beneath its document root, usually `C:\xampp\htdocs`. You can copy the project folder there as `event-management-system`. To serve the workspace directly from another drive, open PowerShell and create a junction (adjust the target path if needed):
+
+```powershell
+New-Item -ItemType Junction `
+	-Path "C:\xampp\htdocs\event-management-system" `
+	-Target "E:\Event-Management-System\event-management-system"
+```
+
+If the junction already exists, do not create it again. The current local setup uses this junction, so workspace edits are served directly by Apache.
+
+### 3. Create and seed the database
+
+1. Open [phpMyAdmin](http://localhost/phpmyadmin).
+2. Select **Import** and import `backend/database/schema.sql`.
+3. Optionally import `backend/database/sample-data.sql` to add local demo accounts, venues, and 12 upcoming events. The sample inserts skip existing sample slugs, so re-importing adds no duplicate events.
+
+### 4. Check the database connection
+
+The defaults in `backend/config/database.php` match a standard local XAMPP install:
+
+| Setting | Default |
+| --- | --- |
+| Host | `127.0.0.1` |
+| Database | `event_management` |
+| User | `root` |
+| Password | *(empty)* |
+
+If your MySQL credentials differ, set `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in the Apache/PHP environment. `backend/.env.example` lists the variables; PHP does not load `.env` files automatically.
+
+Ensure PHP has `pdo_mysql`, `fileinfo`, and `mbstring` enabled. Apache needs write access to `backend/uploads` for event image uploads.
+
+### 5. Open Gather
+
+Visit **[http://localhost/event-management-system/](http://localhost/event-management-system/)**. The root page redirects to the frontend. The frontend calls the API at `backend/index.php/api/...`; opening the HTML files as `file://` will not provide working PHP/API features.
+
+## Demo Accounts
+
+Import the optional sample data, then sign in with one of these local-only accounts:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -42,66 +123,72 @@ The optional sample SQL creates:
 | Organizer | `host@gather.local` | `password` |
 | Attendee | `guest@gather.local` | `password` |
 
-These are deliberately weak classroom credentials. Use only on a private local database and change/remove them before deployment. For a fresh administrator in a non-demo install, register an account and promote it from phpMyAdmin:
+These classroom credentials are intentionally weak. Use them only on a private development database; change or remove them before deployment. Public registration creates attendee accounts only. To promote a local account for admin or organizer testing, update its role in phpMyAdmin:
 
 ```sql
 UPDATE users SET role = 'admin' WHERE email = 'your-local-admin@example.test';
+UPDATE users SET role = 'organizer' WHERE email = 'your-local-organizer@example.test';
 ```
 
-Organizer accounts are likewise created by registering an attendee and changing its role to `organizer` in the local database. Public registration cannot self-assign a privileged role.
+## API Reference
 
-## Implemented Flows
+All endpoints return a consistent JSON envelope:
 
-- Attendee registration/login/logout with PHP password hashing, session regeneration, CSRF token checks, and role-gated API operations.
-- Published-event browsing, text search, category/city/date filters, event details, organizer schedules, and available-ticket display.
-- Organizer event creation, optional image upload (JPEG/PNG/WebP, 5 MB maximum), venue-capacity validation, venue-time conflict checks, and pending admin review.
-- Transactional booking inventory reservation, server-calculated totals, unique booking references, clearly labeled demo payment confirmation, booking history, and cancellation more than 24 hours before the event.
-- Venue CRUD API with ownership checks, admin overview/reports, event approval/rejection, account suspension, category creation/removal, stored contact inquiries, and in-site notifications.
-- Responsive public pages and role-specific attendee, organizer, and administrator dashboards.
+```json
+{
+	"success": true,
+	"message": "Operation successful",
+	"data": {}
+}
+```
 
-The payment workflow is a local simulation: it does not contact a payment gateway and never charges money. The booking reference is the ticket identifier; it is not a scannable QR image. Automated email/SMS reminders, gateway refunds, and production-grade reporting are not configured.
+`GET /auth/session` returns the signed-in user and a CSRF token. Send the token in `X-CSRF-Token` for state-changing requests. Browser requests use credentialed PHP sessions.
 
-## API
-
-All endpoints return `{ "success": boolean, "message": string, "data": object }`. JSON mutation requests require the session CSRF token in `X-CSRF-Token`; `GET /auth/session` provides the current user and token. Browser requests use credentialed same-origin sessions.
-
-| Method | Path | Access / purpose |
+| Method | Endpoint | Purpose / access |
 | --- | --- | --- |
-| GET, POST | `/auth/session`, `/auth/register`, `/auth/login` | Session, attendee registration, login |
-| POST | `/auth/logout` | Authenticated session; CSRF required |
-| GET | `/events` | All matching published events for Explore; no homepage result limit |
-| GET | `/events/featured` | The three nearest upcoming published events for the homepage only |
-| GET | `/events/{id}`, `/categories` | Event details and category discovery |
+| GET, POST | `/auth/session`, `/auth/register`, `/auth/login` | Session, attendee registration, and sign-in |
+| POST | `/auth/logout` | Sign out; CSRF required |
+| GET | `/events/featured` | Three nearest upcoming published events for the homepage |
+| GET | `/events` | All matching published events for Explore; supports `q`, `category`, `city`, and `date` |
+| GET | `/events/{id}`, `/categories` | Event details and category list |
 | GET | `/events/manage` | Organizer's own events or all events for admin |
-| POST, PUT, DELETE | `/events`, `/events/{id}` | Organizer-owned events; admin may manage all |
-| POST | `/events/{id}/image` | Organizer-owned image upload |
-| GET, POST, PUT, DELETE | `/venues`, `/venues/{id}` | Read venues; organizer-owned or admin mutations |
-| POST, GET | `/bookings` | Attendee booking and history |
-| GET, PUT | `/bookings/{id}`, `/bookings/{id}/cancel` | Attendee's own booking |
-| POST, GET | `/payments` | Demo payment confirmation and own payment history |
-| GET | `/payments/{id}` | Attendee's own payment/ticket details |
-| GET, PUT | `/notifications`, `/notifications/{id}/read` | Signed-in user's notifications |
-| POST | `/contact` | Store a validated public contact message |
-| GET | `/admin/dashboard`, `/admin/users`, `/admin/events`, `/admin/reports`, `/admin/payments` | Admin only |
-| GET | `/admin/messages` | Admin-only contact inbox |
-| PUT | `/admin/events/{id}/status`, `/admin/users/{id}/status` | Admin only |
-| POST, DELETE | `/admin/categories`, `/admin/categories/{id}` | Admin only |
+| POST, PUT, DELETE | `/events`, `/events/{id}` | Organizer-owned event operations; admin may manage all |
+| POST | `/events/{id}/image` | Organizer-owned JPEG, PNG, or WebP image upload |
+| GET, POST, PUT, DELETE | `/venues`, `/venues/{id}` | Venue listing and authorized venue operations |
+| POST, GET | `/bookings` | Create a booking and view the signed-in attendee's history |
+| GET, PUT | `/bookings/{id}`, `/bookings/{id}/cancel` | View or cancel the attendee's own booking |
+| POST, GET | `/payments` | Demo payment and signed-in attendee's payment history |
+| GET | `/payments/{id}` | Signed-in attendee's payment/ticket details |
+| GET, PUT | `/notifications`, `/notifications/{id}/read` | View and mark the user's notifications |
+| POST | `/contact` | Submit a validated contact message |
+| GET | `/admin/dashboard`, `/admin/users`, `/admin/events`, `/admin/reports`, `/admin/payments`, `/admin/messages` | Admin-only dashboard and reports |
+| PUT | `/admin/events/{id}/status`, `/admin/users/{id}/status` | Admin event review and account management |
+| POST, DELETE | `/admin/categories`, `/admin/categories/{id}` | Admin category management |
 
-Append endpoint paths to `backend/index.php/api`, for example `GET /backend/index.php/api/events`.
+Example local endpoint: `http://localhost/event-management-system/backend/index.php/api/events`.
 
 ## Database
 
-Import `backend/database/schema.sql` once. It creates the database, normalized InnoDB tables, indexes, constraints, and starter categories. It is intentionally non-destructive on re-import. `sample-data.sql` is optional and idempotent for its local accounts, venues, and events.
+Import `backend/database/schema.sql` to create the database, starter categories, and normalized InnoDB tables. The schema includes users, events, event schedules, bookings, payments, venues, categories, notifications, and contact messages, with foreign keys, indexes, and constraints. The schema is non-destructive on re-import.
 
-Core relationships include organizer-to-events, category/venue-to-events, attendee-to-bookings, booking-to-payment, event-to-schedule, and user-to-notifications. Ticket availability is updated under a row lock in a transaction to prevent overselling.
+`backend/database/sample-data.sql` is optional and intended for local development. Core relationships connect organizers to events, venues and categories to events, attendees to bookings, bookings to payments, events to schedules, and users to notifications. Booking inventory is reserved in a transaction under a row lock to prevent overselling.
 
 ## Verification
 
-1. Sign in with each local sample role and verify that other-role API/dashboard access redirects or returns an authorization error.
-2. As an organizer, create an event for an unoccupied time and venue; verify a conflicting venue/time request is rejected.
-3. As admin, approve the event; then search/filter it and inspect its details as a guest.
-4. As an attendee, book tickets and confirm the demo payment. Confirm the inventory decreases and a unique booking reference appears in the account dashboard.
-5. Cancel a confirmed booking more than 24 hours before the event and confirm inventory is restored; try again inside 24 hours and confirm it is rejected.
-6. Exercise invalid login, duplicate registration, invalid ticket quantities, unauthorized dashboard/API calls, and an invalid image upload.
+Use the demo accounts to check these flows in the browser:
 
-Editor diagnostics were checked during implementation. A live PHP/MySQL integration run still requires the project to be started in a configured XAMPP environment.
+1. Confirm the homepage shows three events and **Explore All Events** opens the full Explore list.
+2. Search `music`; verify all matching Music-category events appear. Try category, city, and date filters as well.
+3. As an organizer, create an event and venue; verify the event waits for admin approval and conflicting venue times are rejected.
+4. As admin, approve the event and check the dashboard totals, user list, and reports.
+5. As an attendee, book tickets and complete demo checkout. Verify the booking reference and inventory change.
+6. Cancel a confirmed booking more than 24 hours before the event; verify inventory is restored. Check that a late cancellation is rejected.
+7. Test duplicate registration, invalid credentials, invalid quantities, unauthorized role access, contact submission, and invalid image uploads.
+
+## Known Limitations
+
+- Checkout is a **demo payment only**; no gateway is configured and no money is charged.
+- Tickets use a unique booking reference, not a generated/scannable QR code.
+- No background service is configured for automated email/SMS reminders.
+- Payment refunds and production-grade analytics are not integrated.
+- The sample credentials and default XAMPP database configuration are not suitable for public deployment.
