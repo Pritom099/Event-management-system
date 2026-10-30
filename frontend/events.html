@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../backend/index.php/api">
+    <title>Explore events · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/app.js" defer></script>
+</head>
+
+<body data-page="events">
+    <main>
+        <section class="page-hero">
+            <div class="wrap">
+                <p class="section-kicker">Out there, right now</p>
+                <h1>Find your next thing.</h1>
+                <p>Browse events hosted by people who care about what they put in a room.</p>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrap">
+                <form class="filter-bar" id="event-filters"><input name="q" aria-label="Search events"
+                        placeholder="Search events"><select name="category" aria-label="Category">
+                        <option value="">All categories</option>
+                    </select><input name="city" aria-label="City" placeholder="City"><input name="date" type="date"
+                        aria-label="Date"><button class="btn btn-small" type="submit"><i
+                            class="fa-solid fa-sliders"></i> Apply filters</button></form>
+                <div class="event-grid" id="event-results"></div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

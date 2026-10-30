@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../../../backend/index.php/api">
+    <title>Host dashboard · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/app.css">
+    <script src="../../js/app.js" defer></script>
+</head>
+
+<body data-page="organizer-dashboard" data-root="../../" data-role="organizer">
+    <main class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <h2>Host studio</h2><a class="active" href="index.html"><i class="fa-solid fa-calendar-plus"></i> Create an
+                event</a><a href="../../events.html"><i class="fa-solid fa-compass"></i> Explore events</a>
+        </aside>
+        <section class="dashboard-main">
+            <p class="section-kicker">Host studio</p>
+            <h1 class="dashboard-title">Make a gathering.</h1>
+            <p class="section-subtitle">Submitted events enter admin review before they appear publicly.</p>
+            <div class="dashboard-panel">
+                <h2>Add a venue</h2>
+                <form id="create-venue-form">
+                    <div class="field"><label>Venue name</label><input name="name" required maxlength="150"></div>
+                    <div class="field"><label>Address</label><input name="address" required maxlength="255"></div>
+                    <div class="field"><label>City</label><input name="city" required maxlength="100"></div>
+                    <div class="field"><label>Capacity</label><input name="capacity" type="number" min="1" required>
+                    </div>
+                    <button class="btn" type="submit">Save venue</button>
+                </form>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Event details</h2>
+                <form id="create-event-form">
+                    <div class="field"><label>Event title</label><input name="title" required maxlength="180"></div>
+                    <div class="field"><label>Description</label><textarea name="description" required></textarea></div>
+                    <div class="field"><label>Category</label><select name="category_id" required></select></div>
+                    <div class="field"><label>Venue</label><select name="venue_id" required></select></div>
+                    <div class="field"><label>Event date</label><input name="event_date" type="date" required></div>
+                    <div class="field"><label>Starts</label><input name="start_time" type="time" value="18:00" required>
+                    </div>
+                    <div class="field"><label>Ends</label><input name="end_time" type="time" value="21:00" required>
+                    </div>
+                    <div class="field"><label>Ticket price</label><input name="ticket_price" type="number" min="0"
+                            step="0.01" value="0" required></div>
+                    <div class="field"><label>Ticket quantity</label><input name="total_tickets" type="number" min="1"
+                            required></div><button class="btn" type="submit">Submit for review <i
+                            class="fa-solid fa-arrow-right"></i></button>
+                    <div class="field"><label>Event image (JPEG, PNG or WebP, max 5 MB)</label><input name="image"
+                            type="file" accept="image/jpeg,image/png,image/webp"></div>
+                </form>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Your events</h2>
+                <div id="organizer-events">Loading events…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Notifications</h2>
+                <div id="notifications"></div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

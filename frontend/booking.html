@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../backend/index.php/api">
+    <title>Reserve tickets · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/app.js" defer></script>
+</head>
+
+<body data-page="booking">
+    <main>
+        <section class="page-hero">
+            <div class="wrap">
+                <p class="section-kicker">Make it official</p>
+                <h1>Save your seat.</h1>
+                <p>Ticket availability and pricing are confirmed by the server before your booking is created.</p>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrap detail-layout">
+                <div id="booking-summary" class="loading-state">Loading event…</div>
+                <aside class="booking-panel">
+                    <h2>Your booking</h2>
+                    <form id="booking-form"><input type="hidden" name="event_id">
+                        <div class="field"><label for="quantity">Tickets</label><input id="quantity" name="quantity"
+                                type="number" min="1" max="10" value="1" required></div>
+                        <div class="panel-line">Total <strong id="booking-total" style="float:right">—</strong></div>
+                        <p class="detail-description">Demo checkout only. No real payment provider or charge is
+                            involved.</p><button class="btn" type="submit" style="width:100%">Reserve & pay <i
+                                class="fa-solid fa-arrow-right"></i></button>
+                    </form>
+                    <div id="booking-result"></div>
+                </aside>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../backend/index.php/api">
+    <meta name="description" content="Find thoughtful events and good company with Gather.">
+    <title>Gather · Find your next event</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/app.js" defer></script>
+</head>
+
+<body data-page="home">
+    <main>
+        <section class="hero">
+            <div class="wrap hero-inner reveal">
+                <p class="eyebrow">A little more out there</p>
+                <h1>Make room<br>for <span>something</span><br>good.</h1>
+                <p class="hero-copy">Find the people, places, and ideas that make an ordinary week feel like a story
+                    worth telling.</p>
+                <div class="hero-actions"><a class="btn btn-lime" href="events.html">Explore events <i
+                            class="fa-solid fa-arrow-right"></i></a><a class="btn btn-outline" href="register.html">Host
+                        a gathering</a></div>
+            </div>
+            <div class="search-dock">
+                <form class="wrap search-form" id="home-search">
+                    <div class="search-field"><i class="fa-solid fa-magnifying-glass"></i>
+                        <div><label for="home-q">Find your kind of thing</label><input id="home-q" name="q"
+                                placeholder="Jazz, pottery, ideas…"></div>
+                    </div>
+                    <div class="search-field"><i class="fa-solid fa-location-dot"></i>
+                        <div><label for="home-city">Where</label><input id="home-city" name="city"
+                                placeholder="City or neighborhood"></div>
+                    </div>
+                    <div class="search-field"><i class="fa-regular fa-calendar"></i>
+                        <div><label for="home-date">When</label><input id="home-date" name="date" type="date"></div>
+                    </div><button class="btn search-submit" type="submit">Find events <i
+                            class="fa-solid fa-arrow-right"></i></button>
+                </form>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrap">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker">On the calendar</p>
+                        <h2 class="section-title">Worth showing up for.</h2>
+                        <p class="section-subtitle">Small rooms, big ideas, long dinners, late sets. Pick a date and see
+                            where it takes you.</p>
+                        <p class="section-subtitle" id="featured-count" aria-live="polite">Loading upcoming events…</p>
+                    </div><a class="text-link" href="events.html">See every event <i
+                            class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="event-grid" id="featured-events"></div>
+            </div>
+        </section>
+        <section class="section section-white section-tight">
+            <div class="wrap">
+                <div class="section-head">
+                    <div>
+                        <p class="section-kicker">Follow a feeling</p>
+                        <h2 class="section-title">What are you into?</h2>
+                    </div>
+                </div>
+                <div class="category-grid"><a class="category-tile" href="events.html?category=technology"><i
+                            class="fa-solid fa-microchip"></i><strong>Technology</strong></a><a class="category-tile"
+                        href="events.html?category=design"><i
+                            class="fa-solid fa-pen-ruler"></i><strong>Design</strong></a><a class="category-tile"
+                        href="events.html?category=music"><i class="fa-solid fa-music"></i><strong>Music</strong></a><a
+                        class="category-tile" href="events.html?category=food-drink"><i
+                            class="fa-solid fa-utensils"></i><strong>Food & drink</strong></a><a class="category-tile"
+                        href="events.html?category=business"><i
+                            class="fa-solid fa-lightbulb"></i><strong>Business</strong></a><a class="category-tile"
+                        href="events.html?category=community"><i
+                            class="fa-solid fa-people-group"></i><strong>Community</strong></a></div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="wrap split-section">
+                <div class="photo-frame" role="img" aria-label="Friends sharing a meal at a warmly lit event"></div>
+                <div>
+                    <p class="section-kicker">Good company, well planned</p>
+                    <h2 class="section-title">Less scrolling.<br>More being there.</h2>
+                    <p class="section-subtitle">Gather brings independent hosts and curious people together. Find your
+                        next favorite room, and leave the logistics to us.</p>
+                    <div class="benefit-list">
+                        <div class="benefit"><span class="benefit-icon"><i class="fa-solid fa-compass"></i></span>
+                            <div>
+                                <h3>Find your people</h3>
+                                <p>Browse thoughtful events by place, date, and what you love.</p>
+                            </div>
+                        </div>
+                        <div class="benefit"><span class="benefit-icon"><i class="fa-solid fa-ticket"></i></span>
+                            <div>
+                                <h3>One clear ticket</h3>
+                                <p>Book in a few taps and keep your plans together in one place.</p>
+                            </div>
+                        </div>
+                        <div class="benefit"><span class="benefit-icon"><i class="fa-solid fa-heart"></i></span>
+                            <div>
+                                <h3>Made for real life</h3>
+                                <p>Independent organizers, local spaces, and reasons to get out.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section section-white section-tight">
+            <div class="wrap stats-band">
+                <div class="stat"><strong>Local</strong><span>hosts with a point of view</span></div>
+                <div class="stat"><strong>Good</strong><span>reasons to leave the house</span></div>
+                <div class="stat"><strong>One</strong><span>place for all your plans</span></div>
+                <div class="stat"><strong>Yours</strong><span>to find and make</span></div>
+            </div>
+        </section>
+        <section class="section quote-section">
+            <div class="wrap quote">
+                <p class="section-kicker">A note from the crowd</p>
+                <blockquote>“I came for a tiny ceramics workshop. I left with a new Sunday ritual and three numbers in
+                    my phone.”</blockquote><cite>Jordan M. · Gather attendee</cite>
+            </div>
+        </section>
+        <section class="section section-tight">
+            <div class="wrap cta-band">
+                <div>
+                    <h2>Have a room worth filling?</h2>
+                    <p>Bring your next gathering to the people looking for it.</p>
+                </div><a class="btn" href="register.html">Become a host <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

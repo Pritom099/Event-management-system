@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../../../backend/index.php/api">
+    <title>Your tickets · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/app.css">
+    <script src="../../js/app.js" defer></script>
+</head>
+
+<body data-page="user-dashboard" data-root="../../" data-role="attendee">
+    <main class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <h2>Your Gather</h2><a class="active" href="index.html"><i class="fa-solid fa-ticket"></i> My tickets</a><a
+                href="../../events.html"><i class="fa-solid fa-compass"></i> Explore events</a>
+        </aside>
+        <section class="dashboard-main">
+            <p class="section-kicker">Your plans</p>
+            <h1 class="dashboard-title">My tickets</h1>
+            <p class="section-subtitle">Your reservations and booking references, all in one place.</p>
+            <div id="user-bookings">
+                <div class="loading-state">Loading your bookings…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Notifications</h2>
+                <div id="notifications"></div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../../../backend/index.php/api">
+    <title>Platform overview · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/app.css">
+    <script src="../../js/app.js" defer></script>
+</head>
+
+<body data-page="admin-dashboard" data-root="../../" data-role="admin">
+    <main class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <h2>Platform</h2><a class="active" href="index.html"><i class="fa-solid fa-chart-line"></i> Overview</a><a
+                href="../../events.html"><i class="fa-solid fa-calendar-days"></i> Public events</a>
+        </aside>
+        <section class="dashboard-main">
+            <p class="section-kicker">Administrator</p>
+            <h1 class="dashboard-title">Platform overview.</h1>
+            <div class="dashboard-stats" id="admin-stats">
+                <div class="loading-state">Loading platform totals…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Event review</h2>
+                <div id="admin-events">Loading submitted events…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Recent bookings</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Attendee</th>
+                                <th>Event</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-bookings"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Account management</h2>
+                <div id="admin-users">Loading accounts…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Reports</h2>
+                <div id="admin-reports">Loading monthly reports…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Contact inbox</h2>
+                <div id="admin-messages">Loading contact messages…</div>
+            </div>
+            <div class="dashboard-panel">
+                <h2>Event categories</h2>
+                <form id="create-category-form" class="filter-bar">
+                    <input name="name" aria-label="Category name" placeholder="Category name" required maxlength="90">
+                    <input name="description" aria-label="Category description" placeholder="Short description"
+                        maxlength="255">
+                    <button class="btn btn-small" type="submit">Add category</button>
+                </form>
+                <div id="admin-categories">Loading categories…</div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

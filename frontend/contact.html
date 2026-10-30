@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../backend/index.php/api">
+    <title>Contact · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="js/app.js" defer></script>
+</head>
+
+<body data-page="contact">
+    <main>
+        <section class="page-hero">
+            <div class="wrap">
+                <p class="section-kicker">We’re listening</p>
+                <h1>Say hello.</h1>
+                <p>Questions about an event, hosting, or your account? Send the team a note.</p>
+            </div>
+        </section>
+        <section class="form-layout">
+            <form class="form-card" id="contact-form">
+                <div class="field"><label for="contact-name">Name</label><input id="contact-name" name="name" required>
+                </div>
+                <div class="field"><label for="contact-email">Email</label><input id="contact-email" name="email"
+                        type="email" required></div>
+                <div class="field"><label for="subject">Subject</label><input id="subject" name="subject" required>
+                </div>
+                <div class="field"><label for="message">Message</label><textarea id="message" name="message" required
+                        minlength="10"></textarea></div><button class="btn" type="submit">Send message <i
+                        class="fa-regular fa-paper-plane"></i></button>
+                <div id="contact-result" aria-live="polite"></div>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>
