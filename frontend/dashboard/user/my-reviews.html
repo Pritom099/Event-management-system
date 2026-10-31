@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="api-base" content="../../../backend/index.php/api">
+    <title>My reviews · Gather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/app.css">
+    <script src="../../js/app.js" defer></script>
+</head>
+
+<body data-page="my-reviews" data-root="../../" data-role="attendee">
+    <main class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <h2>Your Gather</h2>
+            <a href="index.html"><i class="fa-solid fa-ticket"></i> My tickets</a>
+            <a href="wishlist.html"><i class="fa-regular fa-heart"></i> Wishlist</a>
+            <a class="active" href="my-reviews.html"><i class="fa-solid fa-star"></i> My reviews</a>
+            <a href="../../events.html"><i class="fa-solid fa-compass"></i> Explore events</a>
+            <a href="../profile.html"><i class="fa-regular fa-user"></i> Profile</a>
+        </aside>
+        <section class="dashboard-main">
+            <p class="section-kicker">Your perspective</p>
+            <h1 class="dashboard-title">My reviews</h1>
+            <p class="section-subtitle">Reviews you have submitted and their moderation status.</p>
+            <div id="my-reviews">
+                <div class="loading-state">Loading your reviews…</div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

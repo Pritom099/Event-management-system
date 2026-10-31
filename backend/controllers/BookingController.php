@@ -38,7 +38,7 @@ function bookings_route(PDO $pdo, string $method, string $path): void
 
     if ($method === 'GET' && $path === '/bookings') {
         $user = require_user();
-        $sql = 'SELECT b.id, b.reference, b.quantity, b.total_amount, b.status, b.created_at, e.title, e.event_date, e.start_time, e.image_path FROM bookings b JOIN events e ON e.id=b.event_id WHERE b.user_id=? ORDER BY b.created_at DESC';
+        $sql = 'SELECT b.id, b.event_id, b.reference, b.quantity, b.total_amount, b.status, b.created_at, e.title, e.event_date, e.start_time, e.image_path FROM bookings b JOIN events e ON e.id=b.event_id WHERE b.user_id=? ORDER BY b.created_at DESC';
         $query = $pdo->prepare($sql);
         $query->execute([(int)$user['id']]);
         respond(['bookings' => $query->fetchAll()]);

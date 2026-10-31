@@ -59,6 +59,19 @@
                 <div id="organizer-events">Loading events…</div>
             </div>
             <div class="dashboard-panel">
+                <h2>Attendee reviews</h2>
+                <form id="organizer-review-filters" class="filter-bar">
+                    <select name="status" aria-label="Filter reviews by status">
+                        <option value="">All statuses</option>
+                        <option value="pending">Pending approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="btn btn-small" type="submit">Filter reviews</button>
+                </form>
+                <div id="organizer-reviews">Loading attendee reviews…</div>
+            </div>
+            <div class="dashboard-panel">
                 <h2>Notifications</h2>
                 <div id="notifications"></div>
             </div>

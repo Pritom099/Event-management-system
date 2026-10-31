@@ -38,6 +38,8 @@ Gather is an academic event discovery and management application. Its frontend u
 
 All signed-in roles can open the shared dashboard profile page to view their name, email address, and account role.
 
+Attendees can save events to a wishlist and review immediately after a confirmed booking payment succeeds, even before the event date. The event's organizer must approve a review before it appears publicly; admins can also moderate reviews.
+
 The homepage shows the **three nearest upcoming events**. Explore Events displays the complete matching event list with search, category, city, and date filters.
 
 ## Technology
@@ -58,6 +60,8 @@ frontend/
 	register.html             Attendee registration
 	booking.html              Ticket booking and demo checkout
 	dashboard/                Shared profile plus attendee, organizer, and admin dashboards
+	  user/wishlist.html        Saved events
+	  user/my-reviews.html      Review history and moderation status
 	css/                      Shared responsive styles
 	js/                       Fetch API and page behavior
 backend/
@@ -94,7 +98,8 @@ If the junction already exists, do not create it again. The current local setup 
 
 1. Open [phpMyAdmin](http://localhost/phpmyadmin).
 2. Select **Import** and import `backend/database/schema.sql`.
-3. Optionally import `backend/database/sample-data.sql` to add local demo accounts, venues, and 12 upcoming events. Re-importing adds no duplicate events and resets the three demo accounts to the documented local password.
+3. Optionally import `backend/database/sample-data.sql` to add local demo accounts, venues, 12 upcoming events, and one past event with a completed demo booking for review testing. Re-importing adds no duplicate sample events and resets the three demo accounts to the documented local password.
+4. Re-import `backend/database/schema.sql` to create the new `wishlists` and `reviews` tables. The schema uses `CREATE TABLE IF NOT EXISTS`, so existing data is not dropped.
 
 ### 4. Check the database connection
 
@@ -117,7 +122,7 @@ Visit **[http://localhost/event-management-system/](http://localhost/event-manag
 
 ## Demo Accounts
 
-Import the optional sample data, then sign in with one of these local-only accounts:
+Import the schema for the default admin, and import optional sample data for the organizer/attendee accounts:
 
 | Role | Email | Password |
 | --- | --- | --- |
@@ -125,7 +130,7 @@ Import the optional sample data, then sign in with one of these local-only accou
 | Organizer | `host@gather.local` | `password` |
 | Attendee | `guest@gather.local` | `password` |
 
-These classroom credentials are intentionally weak. Use them only on a private development database; change or remove them before deployment. Public registration creates attendee accounts only. To promote a local account for admin or organizer testing, update its role in phpMyAdmin:
+The schema creates the default local administrator; sample data adds the organizer and attendee accounts. Public registration lets users choose attendee or organizer, but never admin. These classroom credentials are intentionally weak. Use them only on a private development database; change or remove them before deployment. To promote another local account to admin, update its role in phpMyAdmin:
 
 ```sql
 UPDATE users SET role = 'admin' WHERE email = 'your-local-admin@example.test';
@@ -148,7 +153,7 @@ All endpoints return a consistent JSON envelope:
 
 | Method | Endpoint | Purpose / access |
 | --- | --- | --- |
-| GET, POST | `/auth/session`, `/auth/register`, `/auth/login` | Session, attendee registration, and sign-in |
+| GET, POST | `/auth/session`, `/auth/register`, `/auth/login` | Session, attendee/organizer registration, and sign-in |
 | POST | `/auth/logout` | Sign out; CSRF required |
 | GET | `/events/featured` | Three nearest upcoming published events for the homepage |
 | GET | `/events` | All matching published events for Explore; supports `q`, `category`, `city`, and `date` |
@@ -162,18 +167,30 @@ All endpoints return a consistent JSON envelope:
 | POST, GET | `/payments` | Demo payment and signed-in attendee's payment history |
 | GET | `/payments/{id}` | Signed-in attendee's payment/ticket details |
 | GET, PUT | `/notifications`, `/notifications/{id}/read` | View and mark the user's notifications |
+| POST, GET | `/wishlist` | Add an event and list the signed-in user's saved events |
+| GET | `/wishlist/check/{event_id}` | Check if a published event is saved |
+| DELETE | `/wishlist/{event_id}` | Remove an event from the signed-in user's wishlist |
+| POST | `/reviews` | Submit one review immediately after a confirmed booking has a successful payment |
+| GET | `/reviews/event/{event_id}` | Approved public reviews, summary, and signed-in review eligibility |
+| GET | `/reviews/event/{event_id}/summary` | Approved average, count, and 1–5-star distribution |
+| GET | `/reviews/my-reviews` | Signed-in attendee's own review history |
+| PUT, DELETE | `/reviews/{id}` | Edit or delete the signed-in attendee's own review |
+| GET | `/organizer/reviews?event_id={id}&status=pending` | Reviews for the signed-in organizer's own events |
+| PATCH | `/organizer/reviews/{id}/status` | Approve/reject a review for an event owned by that organizer |
 | POST | `/contact` | Submit a validated contact message |
 | GET | `/admin/dashboard`, `/admin/users`, `/admin/events`, `/admin/reports`, `/admin/payments`, `/admin/messages` | Admin-only dashboard and reports |
 | PUT | `/admin/events/{id}/status`, `/admin/users/{id}/status` | Admin event review and account management |
+| GET | `/admin/reviews?event_id={id}&status=pending` | Admin review queue with optional filters |
+| PATCH, DELETE | `/admin/reviews/{id}/status`, `/admin/reviews/{id}` | Admin moderation and removal |
 | POST, DELETE | `/admin/categories`, `/admin/categories/{id}` | Admin category management |
 
 Example local endpoint: `http://localhost/event-management-system/backend/index.php/api/events`.
 
 ## Database
 
-Import `backend/database/schema.sql` to create the database, starter categories, and normalized InnoDB tables. The schema includes users, events, event schedules, bookings, payments, venues, categories, notifications, and contact messages, with foreign keys, indexes, and constraints. The schema is non-destructive on re-import.
+Import `backend/database/schema.sql` to create the database, starter categories, and normalized InnoDB tables. The schema includes users, events, event schedules, bookings, payments, venues, categories, notifications, contact messages, wishlists, and reviews, with foreign keys, indexes, and constraints. The schema is non-destructive on re-import. Wishlist rows are unique per user/event; review rows are unique per user/event and reference a qualifying booking.
 
-`backend/database/sample-data.sql` is optional and intended for local development. Core relationships connect organizers to events, venues and categories to events, attendees to bookings, bookings to payments, events to schedules, and users to notifications. Booking inventory is reserved in a transaction under a row lock to prevent overselling.
+`backend/database/sample-data.sql` is optional and intended for local development. Core relationships connect organizers to events, venues and categories to events, attendees to bookings, bookings to payments, events to schedules, and users to notifications, wishlists, and reviews. Booking inventory is reserved in a transaction under a row lock to prevent overselling.
 
 ## Verification
 
@@ -181,11 +198,13 @@ Use the demo accounts to check these flows in the browser:
 
 1. Confirm the homepage shows three events and **Explore All Events** opens the full Explore list.
 2. Search `music`; verify all matching Music-category events appear. Try category, city, and date filters as well.
-3. As an organizer, create an event and venue; verify the event waits for admin approval and conflicting venue times are rejected.
-4. As admin, approve the event and check the dashboard totals, user list, and reports.
-5. As an attendee, book tickets and complete demo checkout. Verify the booking reference and inventory change.
-6. Cancel a confirmed booking more than 24 hours before the event; verify inventory is restored. Check that a late cancellation is rejected.
-7. Test duplicate registration, invalid credentials, invalid quantities, unauthorized role access, contact submission, and invalid image uploads.
+3. As an attendee, toggle event hearts and check wishlist add/remove, duplicate prevention, and per-user isolation.
+4. As an organizer, create an event and venue; verify the event waits for admin approval and conflicting venue times are rejected.
+5. As admin, approve the event and check the dashboard totals, user list, and reports.
+6. As an attendee, book tickets and complete demo checkout. Verify the booking reference and inventory change.
+7. For review testing, use an attendee with a `confirmed` booking and `succeeded` payment. A future event is eligible immediately after checkout. Submit once, verify duplicate rejection, edit/delete ownership, then approve/reject from the owning organizer dashboard and check the public average/distribution.
+8. Cancel a confirmed booking more than 24 hours before the event; verify inventory is restored. Check that a late cancellation is rejected.
+9. Test duplicate registration, invalid credentials, invalid quantities, unauthorized role access, contact submission, and invalid image uploads.
 
 ## Known Limitations
 

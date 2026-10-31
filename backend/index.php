@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 require __DIR__ . '/middleware/http.php';
 require __DIR__ . '/config/database.php';
+require __DIR__ . '/models/Wishlist.php';
+require __DIR__ . '/models/Review.php';
 require __DIR__ . '/controllers/AuthController.php';
 require __DIR__ . '/controllers/EventController.php';
 require __DIR__ . '/controllers/BookingController.php';
 require __DIR__ . '/controllers/PaymentController.php';
 require __DIR__ . '/controllers/VenueController.php';
 require __DIR__ . '/controllers/AdminController.php';
+require __DIR__ . '/controllers/WishlistController.php';
+require __DIR__ . '/controllers/ReviewController.php';
 require __DIR__ . '/routes/api.php';
 
 header('Access-Control-Allow-Origin: ' . (getenv('APP_ORIGIN') ?: 'http://localhost'));
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;

@@ -36,7 +36,7 @@ function events_route(PDO $pdo, string $method, string $path): void
             $where[] = 'e.event_date = ?';
             $params[] = $_GET['date'];
         }
-        $sql = 'SELECT e.id, e.title, e.slug, e.description, e.event_date, e.start_time, e.ticket_price, e.available_tickets, e.image_path, c.name AS category, c.slug AS category_slug, v.name AS venue, v.city, u.name AS organizer FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE ' . implode(' AND ', $where) . ' ORDER BY e.event_date, e.start_time';
+        $sql = "SELECT e.id, e.title, e.slug, e.description, e.event_date, e.start_time, e.ticket_price, e.available_tickets, e.image_path, c.name AS category, c.slug AS category_slug, v.name AS venue, v.city, u.name AS organizer, (SELECT COALESCE(AVG(r.rating),0) FROM reviews r WHERE r.event_id=e.id AND r.status='approved') AS average_rating, (SELECT COUNT(*) FROM reviews r WHERE r.event_id=e.id AND r.status='approved') AS review_count FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE " . implode(' AND ', $where) . ' ORDER BY e.event_date, e.start_time';
         if ($path === '/events/featured') {
             $sql .= ' LIMIT 3';
         }
@@ -46,7 +46,7 @@ function events_route(PDO $pdo, string $method, string $path): void
     }
 
     if ($method === 'GET' && preg_match('#^/events/(\d+)$#', $path, $match)) {
-        $statement = $pdo->prepare("SELECT e.*, c.name AS category, v.name AS venue, v.address, v.city, u.name AS organizer FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE e.id=? AND e.status='published'");
+        $statement = $pdo->prepare("SELECT e.*, c.name AS category, v.name AS venue, v.address, v.city, u.name AS organizer, (SELECT COALESCE(AVG(r.rating),0) FROM reviews r WHERE r.event_id=e.id AND r.status='approved') AS average_rating, (SELECT COUNT(*) FROM reviews r WHERE r.event_id=e.id AND r.status='approved') AS review_count FROM events e JOIN categories c ON c.id=e.category_id JOIN venues v ON v.id=e.venue_id JOIN users u ON u.id=e.organizer_id WHERE e.id=? AND e.status='published'");
         $statement->execute([(int)$match[1]]);
         $event = $statement->fetch();
         if (!$event) respond([], 'Event not found.', 404);

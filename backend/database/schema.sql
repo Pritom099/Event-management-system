@@ -128,6 +128,40 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   INDEX idx_contact_status_created (status, created_at)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS wishlists (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  event_id BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_wishlists_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  CONSTRAINT uq_wishlists_user_event UNIQUE (user_id, event_id),
+  INDEX idx_wishlists_event (event_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  event_id BIGINT UNSIGNED NOT NULL,
+  booking_id BIGINT UNSIGNED NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  comment TEXT NOT NULL,
+  status ENUM('approved', 'pending', 'rejected') NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reviews_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reviews_booking FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL,
+  CONSTRAINT uq_reviews_user_event UNIQUE (user_id, event_id),
+  CONSTRAINT chk_reviews_rating CHECK (rating BETWEEN 1 AND 5),
+  INDEX idx_reviews_event_status (event_id, status, created_at),
+  INDEX idx_reviews_booking (booking_id)
+) ENGINE=InnoDB;
+
+-- Local academic setup account; change its password before any non-local deployment.
+INSERT IGNORE INTO users (name, email, password_hash, role) VALUES
+  ('Gather Administrator', 'admin@gather.local', '$2y$12$lXPyXskGLb1uNHztxCB5Cup3E81YQZSfBxh4lOPNMo4PsczqYrADG', 'admin');
+
 INSERT IGNORE INTO categories (name, slug, description) VALUES
   ('Technology', 'technology', 'Ideas, products, and the people shaping what comes next.'),
   ('Design', 'design', 'Creative practice, visual culture, and thoughtful craft.'),

@@ -36,8 +36,50 @@
             return imageUrl.href;
         } catch { return event.image_path; }
     };
-    function eventCard(event) {
-        return `<article class="event-card"><img class="event-image" src="${escapeHtml(eventImage(event))}" alt="${escapeHtml(event.title)}" loading="lazy"><div class="event-content"><div class="event-meta">${escapeHtml(event.category || 'Gathering')}</div><h3 class="event-title">${escapeHtml(event.title)}</h3><div class="event-info"><span><i class="fa-regular fa-calendar"></i>${escapeHtml(dateLabel(event.event_date))} · ${escapeHtml(String(event.start_time || '').slice(0, 5))}</span><span><i class="fa-solid fa-location-dot"></i>${escapeHtml(event.venue || event.city || 'Location to be announced')}${event.city ? `, ${escapeHtml(event.city)}` : ''}</span><span><i class="fa-solid fa-ticket"></i>${Number(event.available_tickets)} seats left</span></div><div class="event-bottom"><div class="price">${money(event.ticket_price)}<small>per ticket</small></div><a class="btn btn-small" href="${root}event-details.html?id=${encodeURIComponent(event.id)}">View details <i class="fa-solid fa-arrow-right"></i></a></div></div></article>`;
+    function eventCard(event, wishlistIds = new Set()) {
+        const saved = wishlistIds.has(Number(event.id));
+        return `<article class="event-card"><div class="event-image-wrap"><img class="event-image" src="${escapeHtml(eventImage(event))}" alt="${escapeHtml(event.title)}" loading="lazy"><button class="wishlist-toggle${saved ? ' is-saved' : ''}" type="button" data-event-id="${Number(event.id)}" aria-label="${saved ? 'Remove from' : 'Add to'} wishlist: ${escapeHtml(event.title)}" aria-pressed="${saved}"><i class="${saved ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button></div><div class="event-content"><div class="event-meta">${escapeHtml(event.category || 'Gathering')}</div><div class="event-rating">${Number(event.review_count) ? `${starDisplay(event.average_rating)} <span>${Number(event.average_rating).toFixed(1)} · ${Number(event.review_count)} review${Number(event.review_count) === 1 ? '' : 's'}</span>` : '<span class="event-rating-empty">No reviews yet</span>'}</div><h3 class="event-title">${escapeHtml(event.title)}</h3><div class="event-info"><span><i class="fa-regular fa-calendar"></i>${escapeHtml(dateLabel(event.event_date))} · ${escapeHtml(String(event.start_time || '').slice(0, 5))}</span><span><i class="fa-solid fa-location-dot"></i>${escapeHtml(event.venue || event.city || 'Location to be announced')}${event.city ? `, ${escapeHtml(event.city)}` : ''}</span><span><i class="fa-solid fa-ticket"></i>${Number(event.available_tickets)} seats left</span></div><div class="event-bottom"><div class="price">${money(event.ticket_price)}<small>per ticket</small></div><a class="btn btn-small" href="${root}event-details.html?id=${encodeURIComponent(event.id)}">View details <i class="fa-solid fa-arrow-right"></i></a></div></div></article>`;
+    }
+
+    async function wishlistIds() {
+        if (!currentUser) return new Set();
+        try {
+            const data = await api('/wishlist');
+            return new Set(data.events.map(event => Number(event.id)));
+        } catch { return new Set(); }
+    }
+
+    function bindWishlist(container) {
+        if (container.dataset.wishlistBound) return;
+        container.dataset.wishlistBound = 'true';
+        container.addEventListener('click', async event => {
+            const button = event.target.closest('.wishlist-toggle');
+            if (!button) return;
+            if (!currentUser) {
+                toast('Sign in to save events.');
+                window.setTimeout(() => { location.href = `${root}login.html`; }, 500);
+                return;
+            }
+            const eventId = Number(button.dataset.eventId);
+            const saved = button.getAttribute('aria-pressed') === 'true';
+            button.disabled = true;
+            try {
+                if (saved) await api(`/wishlist/${eventId}`, { method: 'DELETE' });
+                else await api('/wishlist', { method: 'POST', body: JSON.stringify({ event_id: eventId }) });
+                setWishlistButton(button, !saved);
+                toast(saved ? 'Removed from wishlist.' : 'Added to wishlist.');
+                container.dispatchEvent(new CustomEvent('wishlist:changed', { bubbles: true, detail: { eventId, saved: !saved } }));
+            } catch (error) {
+                toast(error.message, true);
+            } finally { button.disabled = false; }
+        });
+    }
+
+    function setWishlistButton(button, saved) {
+        button.classList.toggle('is-saved', saved);
+        button.setAttribute('aria-pressed', String(saved));
+        button.setAttribute('aria-label', `${saved ? 'Remove from' : 'Add to'} wishlist`);
+        button.innerHTML = `<i class="${saved ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
     }
 
     function setShell() {
@@ -79,9 +121,11 @@
         container.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Finding your next event…</div>';
         try {
             const data = await api(`${endpoint}${params.size ? `?${params}` : ''}`);
+            const savedEvents = await wishlistIds();
             const featuredCount = container.id === 'featured-events' ? document.querySelector('#featured-count') : null;
             if (featuredCount) featuredCount.textContent = data.events.length ? `Showing ${data.events.length} upcoming events` : 'New events will appear here as hosts publish them.';
-            container.innerHTML = data.events.length ? data.events.map(eventCard).join('') : '<div class="empty-state"><i class="fa-regular fa-calendar"></i><h3>No events match just yet</h3><p>Try a different search, or check back soon for something good.</p></div>';
+            container.innerHTML = data.events.length ? data.events.map(event => eventCard(event, savedEvents)).join('') : '<div class="empty-state"><i class="fa-regular fa-calendar"></i><h3>No events match just yet</h3><p>Try a different search, or check back soon for something good.</p></div>';
+            bindWishlist(container);
         } catch (error) { container.innerHTML = `<div class="error-state">${escapeHtml(error.message)}<br>Check that the PHP API and database are running.</div>`; }
     }
 
@@ -118,9 +162,90 @@
         if (!id) { target.innerHTML = '<div class="empty-state">Choose an event from the events page.</div>'; return; }
         try {
             const { event } = await api(`/events/${encodeURIComponent(id)}`);
+            const savedEvents = await wishlistIds();
+            const isSaved = savedEvents.has(Number(event.id));
             document.title = `${event.title} · Gather`;
-            target.innerHTML = `<div><img class="detail-banner" src="${escapeHtml(eventImage(event))}" alt="${escapeHtml(event.title)}"><p class="section-kicker" style="margin-top:27px">${escapeHtml(event.category)}</p><h1 class="section-title">${escapeHtml(event.title)}</h1><p class="detail-description">${escapeHtml(event.description)}</p><h2 class="section-title" style="font-size:1.8rem;margin-top:35px">The host</h2><p class="detail-description">Hosted by ${escapeHtml(event.organizer)} at ${escapeHtml(event.venue)}.</p>${event.schedule?.length ? `<h2 class="section-title" style="font-size:1.8rem;margin-top:35px">Schedule</h2>${event.schedule.map(item => `<p class="panel-line"><strong>${escapeHtml(item.title)}</strong> · ${escapeHtml(item.starts_at)} ${escapeHtml(item.details || '')}</p>`).join('')}` : ''}</div><aside class="booking-panel"><p class="section-kicker">Save your seat</p><p class="panel-price">${money(event.ticket_price)} <small style="font:400 .8rem var(--sans);color:var(--muted)">/ ticket</small></p><div class="panel-line"><i class="fa-regular fa-calendar"></i> ${escapeHtml(dateLabel(event.event_date))} · ${escapeHtml(String(event.start_time).slice(0, 5))}</div><div class="panel-line"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(event.venue)}, ${escapeHtml(event.city)}</div><div class="panel-line"><i class="fa-solid fa-ticket"></i> ${Number(event.available_tickets)} tickets available</div><a class="btn" style="width:100%;margin-top:17px" href="${root}booking.html?event=${encodeURIComponent(event.id)}">Book tickets</a></aside>`;
+            target.innerHTML = `<div><img class="detail-banner" src="${escapeHtml(eventImage(event))}" alt="${escapeHtml(event.title)}"><div class="detail-title-row"><div><p class="section-kicker" style="margin-top:27px">${escapeHtml(event.category)}</p><h1 class="section-title">${escapeHtml(event.title)}</h1></div><button class="wishlist-toggle detail-wishlist${isSaved ? ' is-saved' : ''}" type="button" data-event-id="${Number(event.id)}" aria-label="${isSaved ? 'Remove from' : 'Add to'} wishlist: ${escapeHtml(event.title)}" aria-pressed="${isSaved}"><i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button></div><p class="detail-description">${escapeHtml(event.description)}</p><h2 class="section-title" style="font-size:1.8rem;margin-top:35px">The host</h2><p class="detail-description">Hosted by ${escapeHtml(event.organizer)} at ${escapeHtml(event.venue)}.</p>${event.schedule?.length ? `<h2 class="section-title" style="font-size:1.8rem;margin-top:35px">Schedule</h2>${event.schedule.map(item => `<p class="panel-line"><strong>${escapeHtml(item.title)}</strong> · ${escapeHtml(item.starts_at)} ${escapeHtml(item.details || '')}</p>`).join('')}` : ''}</div><aside class="booking-panel"><p class="section-kicker">Save your seat</p><p class="panel-price">${money(event.ticket_price)} <small style="font:400 .8rem var(--sans);color:var(--muted)">/ ticket</small></p><div class="panel-line"><i class="fa-regular fa-calendar"></i> ${escapeHtml(dateLabel(event.event_date))} · ${escapeHtml(String(event.start_time).slice(0, 5))}</div><div class="panel-line"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(event.venue)}, ${escapeHtml(event.city)}</div><div class="panel-line"><i class="fa-solid fa-ticket"></i> ${Number(event.available_tickets)} tickets available</div><a class="btn" style="width:100%;margin-top:17px" href="${root}booking.html?event=${encodeURIComponent(event.id)}">Book tickets</a><a class="btn btn-outline" style="width:100%;margin-top:9px" id="review-entry-link" href="#event-reviews">Write a review <i class="fa-regular fa-star"></i></a></aside>`;
+            bindWishlist(target);
+            loadReviewSection(event.id);
         } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
+    }
+
+    function starDisplay(rating) {
+        return `<span class="star-display" aria-label="${Number(rating).toFixed(1)} out of 5 stars">${[1, 2, 3, 4, 5].map(star => `<i class="fa-${Number(rating) >= star ? 'solid' : 'regular'} fa-star"></i>`).join('')}</span>`;
+    }
+
+    function reviewFormMarkup(review = null) {
+        const rating = Number(review?.rating || 5);
+        return `<div class="review-form-panel" id="review-entry"><h3>${review ? 'Edit your review' : 'Share your experience'}</h3>${review ? `<p><span class="review-status ${escapeHtml(review.status)}">${escapeHtml(review.status)}</span> Waiting for organizer approval.</p>` : '<p>Submit your review as soon as your ticket payment is confirmed.</p>'}<form id="review-form" data-review-id="${review ? Number(review.id) : ''}"><input type="hidden" name="rating" value="${rating}"><div class="field"><label>Your rating</label><div class="star-picker" role="radiogroup" aria-label="Rating from one to five stars">${[1, 2, 3, 4, 5].map(star => `<button class="star-choice${star <= rating ? ' is-active' : ''}" type="button" data-rating="${star}" role="radio" aria-checked="${star === rating}" aria-label="${star} star${star === 1 ? '' : 's'}"><i class="fa-solid fa-star"></i></button>`).join('')}</div></div><div class="field"><label for="review-comment">Comment</label><textarea id="review-comment" name="comment" maxlength="3000" placeholder="What stood out about this event?">${escapeHtml(review?.comment || '')}</textarea></div><div class="review-form-actions"><button class="btn" type="submit">${review ? 'Update review' : 'Submit review'}</button>${review ? '<button class="btn btn-outline" type="button" id="delete-own-review">Delete review</button>' : ''}</div></form></div>`;
+    }
+
+    async function loadReviewSection(eventId) {
+        const target = document.querySelector('#event-reviews'); if (!target) return;
+        try {
+            const data = await api(`/reviews/event/${eventId}`);
+            const summary = data.summary;
+            const distribution = [5, 4, 3, 2, 1].map(star => {
+                const count = Number(summary.distribution[star] || 0);
+                const width = summary.total ? count / summary.total * 100 : 0;
+                return `<div class="review-distribution-row"><span>${star} <i class="fa-solid fa-star"></i></span><div class="review-bar"><span style="width:${width}%"></span></div><strong>${count}</strong></div>`;
+            }).join('');
+            const reviews = data.reviews.length ? data.reviews.map(review => `<article class="review-item"><div class="review-item-head"><div><strong>${escapeHtml(review.reviewer)}</strong><div>${starDisplay(review.rating)} ${review.status !== 'approved' ? `<span class="review-status ${escapeHtml(review.status)}">${escapeHtml(review.status)}</span>` : ''}</div></div><time datetime="${escapeHtml(review.created_at)}">${escapeHtml(dateLabel(review.created_at.slice(0, 10)))}</time></div><p>${escapeHtml(review.comment || 'Rated without a written comment.')}</p></article>`).join('') : `<div class="empty-state">${data.my_review ? `Your review is ${escapeHtml(data.my_review.status)} and will appear here after the organizer approves it.` : 'No approved reviews yet. Be the first to share your experience.'}</div>`;
+            let form = '';
+            if (currentUser?.role === 'attendee' && (data.my_review || data.can_review)) form = reviewFormMarkup(data.my_review);
+            else if (!currentUser) form = `<div class="review-form-panel" id="review-entry"><h3>Share your experience</h3><p>Sign in and complete a ticket payment to leave a review.</p><a class="btn btn-small" href="${root}login.html">Sign in</a></div>`;
+            else if (currentUser.role === 'attendee') form = '<div class="review-form-panel" id="review-entry"><h3>Payment required</h3><p>Complete payment for a ticket to this event. You can review it as soon as checkout confirms your payment.</p></div>';
+            target.innerHTML = `<p class="section-kicker">Attendee feedback</p><h2 class="section-title">Reviews</h2><div class="review-summary"><div class="review-score"><strong>${Number(summary.average).toFixed(1)}</strong><div>${starDisplay(summary.average)}<div class="detail-description">${Number(summary.total)} approved review${Number(summary.total) === 1 ? '' : 's'}</div></div></div><div class="review-distribution">${distribution}</div></div><div class="review-layout"><div class="review-list">${reviews}</div>${form}</div>`;
+            const reviewEntryLink = document.querySelector('#review-entry-link');
+            if (reviewEntryLink) {
+                if (!currentUser) {
+                    reviewEntryLink.href = `${root}login.html`;
+                    reviewEntryLink.innerHTML = 'Sign in to review <i class="fa-regular fa-star"></i>';
+                } else if (currentUser.role !== 'attendee') {
+                    reviewEntryLink.href = '#review-entry';
+                    reviewEntryLink.innerHTML = 'Attendee reviews <i class="fa-regular fa-star"></i>';
+                } else if (data.my_review) {
+                    reviewEntryLink.href = '#review-entry';
+                    reviewEntryLink.innerHTML = `${data.my_review.status === 'pending' ? 'Review pending organizer approval' : 'Edit your review'} <i class="fa-regular fa-star"></i>`;
+                } else if (data.can_review) {
+                    reviewEntryLink.href = '#review-entry';
+                    reviewEntryLink.innerHTML = 'Write a review <i class="fa-regular fa-star"></i>';
+                } else {
+                    reviewEntryLink.href = '#review-entry';
+                    reviewEntryLink.innerHTML = 'Pay for a ticket to review <i class="fa-regular fa-star"></i>';
+                }
+            }
+            bindReviewForm(target, eventId);
+        } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
+    }
+
+    function bindReviewForm(target, eventId) {
+        const form = target.querySelector('#review-form'); if (!form) return;
+        const ratingInput = form.elements.rating;
+        form.querySelectorAll('.star-choice').forEach(button => button.addEventListener('click', () => {
+            const rating = Number(button.dataset.rating);
+            ratingInput.value = String(rating);
+            form.querySelectorAll('.star-choice').forEach(choice => {
+                const active = Number(choice.dataset.rating) <= rating;
+                choice.classList.toggle('is-active', active);
+                choice.setAttribute('aria-checked', String(Number(choice.dataset.rating) === rating));
+            });
+        }));
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const reviewId = form.dataset.reviewId;
+            try {
+                const body = JSON.stringify({ event_id: eventId, rating: ratingInput.value, comment: form.elements.comment.value });
+                await api(reviewId ? `/reviews/${reviewId}` : '/reviews', { method: reviewId ? 'PUT' : 'POST', body });
+                toast(reviewId ? 'Review updated and sent to the organizer.' : 'Review submitted to the organizer for approval.');
+                loadReviewSection(eventId);
+            } catch (error) { toast(error.message, true); }
+        });
+        form.querySelector('#delete-own-review')?.addEventListener('click', async () => {
+            if (!confirm('Delete your review?')) return;
+            try { await api(`/reviews/${form.dataset.reviewId}`, { method: 'DELETE' }); toast('Review deleted.'); loadReviewSection(eventId); }
+            catch (error) { toast(error.message, true); }
+        });
     }
 
     async function initAuth() {
@@ -155,7 +280,7 @@
                 try {
                     const booking = await api('/bookings', { method: 'POST', body: JSON.stringify({ event_id: event.id, quantity: qty.value }) });
                     const payment = await api('/payments', { method: 'POST', body: JSON.stringify({ booking_id: booking.id }) });
-                    document.querySelector('#booking-result').innerHTML = `<div class="notice" style="background:#e5eddc;color:#315b43"><strong>Booking confirmed.</strong><br>Reference ${escapeHtml(payment.booking_reference)} · ${money(payment.amount)}<br><small>Demo payment only. No real money was charged.</small></div><a class="btn" href="${root}dashboard/user/index.html">View your tickets</a>`;
+                    document.querySelector('#booking-result').innerHTML = `<div class="notice" style="background:#e5eddc;color:#315b43"><strong>Booking confirmed.</strong><br>Reference ${escapeHtml(payment.booking_reference)} · ${money(payment.amount)}<br><small>Demo payment only. No real money was charged.</small></div><div class="review-form-actions"><a class="btn" href="${root}event-details.html?id=${encodeURIComponent(event.id)}#review-entry">Write a review now</a><a class="btn btn-outline" href="${root}dashboard/user/index.html">View your tickets</a></div>`;
                     form.hidden = true;
                 } catch (error) { toast(error.message, true); }
             });
@@ -166,12 +291,53 @@
         const target = document.querySelector('#user-bookings'); if (!target) return;
         try {
             const data = await api('/bookings');
-            target.innerHTML = data.bookings.length ? `<div class="table-wrap"><table><thead><tr><th>Event</th><th>Date</th><th>Tickets</th><th>Total</th><th>Status</th><th>Ticket reference</th><th></th></tr></thead><tbody>${data.bookings.map(item => `<tr><td>${escapeHtml(item.title)}</td><td>${escapeHtml(dateLabel(item.event_date))}</td><td>${Number(item.quantity)}</td><td>${money(item.total_amount)}</td><td><span class="status">${escapeHtml(item.status.replace('_', ' '))}</span></td><td>${escapeHtml(item.reference)}</td><td>${item.status === 'confirmed' ? `<button class="btn btn-small btn-outline cancel-booking" data-id="${item.id}">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No tickets yet. Your next good story is out there.</div>';
+            target.innerHTML = data.bookings.length ? `<div class="table-wrap"><table><thead><tr><th>Event</th><th>Date</th><th>Tickets</th><th>Total</th><th>Status</th><th>Ticket reference</th><th></th></tr></thead><tbody>${data.bookings.map(item => `<tr><td><a class="text-link" href="${root}event-details.html?id=${Number(item.event_id)}">${escapeHtml(item.title)}</a></td><td>${escapeHtml(dateLabel(item.event_date))}</td><td>${Number(item.quantity)}</td><td>${money(item.total_amount)}</td><td><span class="status">${escapeHtml(item.status.replace('_', ' '))}</span></td><td>${escapeHtml(item.reference)}</td><td>${item.status === 'confirmed' ? `<button class="btn btn-small btn-outline cancel-booking" data-id="${item.id}">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No tickets yet. Your next good story is out there.</div>';
             if (!target.dataset.bound) {
                 target.dataset.bound = 'true';
                 target.addEventListener('click', async event => {
                     const button = event.target.closest('.cancel-booking'); if (!button || !confirm('Cancel this booking?')) return;
                     try { await api(`/bookings/${button.dataset.id}/cancel`, { method: 'PUT', body: '{}' }); toast('Booking cancelled.'); initUserDashboard(); }
+                    catch (error) { toast(error.message, true); }
+                });
+            }
+        } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
+    }
+
+    function wishlistCard(event) {
+        return `<article class="event-card"><div class="event-image-wrap"><img class="event-image" src="${escapeHtml(eventImage(event))}" alt="${escapeHtml(event.title)}" loading="lazy"><button class="wishlist-toggle is-saved" type="button" data-event-id="${Number(event.id)}" aria-label="Remove from wishlist: ${escapeHtml(event.title)}" aria-pressed="true"><i class="fa-solid fa-heart"></i></button></div><div class="event-content"><div class="event-meta">${escapeHtml(event.category)}</div><h2 class="event-title">${escapeHtml(event.title)}</h2><div class="event-info"><span><i class="fa-regular fa-calendar"></i>${escapeHtml(dateLabel(event.event_date))} · ${escapeHtml(String(event.start_time).slice(0, 5))}</span><span><i class="fa-solid fa-location-dot"></i>${escapeHtml(event.venue)}, ${escapeHtml(event.city)}</span><span><i class="fa-solid fa-ticket"></i>${money(event.ticket_price)}</span></div><div class="event-bottom"><a class="btn btn-small" href="${root}event-details.html?id=${Number(event.id)}">View details</a><button class="btn btn-small btn-outline wishlist-remove" type="button" data-event-id="${Number(event.id)}">Remove</button></div></div></article>`;
+    }
+
+    async function initWishlist() {
+        const target = document.querySelector('#wishlist-events'); if (!target) return;
+        try {
+            const data = await api('/wishlist');
+            target.innerHTML = data.events.length ? data.events.map(wishlistCard).join('') : '<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>Your wishlist is empty</h3><p>Tap the heart on an event to save it for later.</p><a class="btn btn-small" href="../../events.html">Explore events</a></div>';
+            bindWishlist(target);
+            if (!target.dataset.removeBound) {
+                target.dataset.removeBound = 'true';
+                target.addEventListener('click', async event => {
+                    const button = event.target.closest('.wishlist-remove'); if (!button) return;
+                    if (!confirm('Remove this event from your wishlist?')) return;
+                    try { await api(`/wishlist/${button.dataset.eventId}`, { method: 'DELETE' }); toast('Event removed from wishlist.'); initWishlist(); }
+                    catch (error) { toast(error.message, true); }
+                });
+                target.addEventListener('wishlist:changed', () => initWishlist());
+            }
+        } catch (error) {
+            target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`;
+        }
+    }
+
+    async function initMyReviews() {
+        const target = document.querySelector('#my-reviews'); if (!target) return;
+        try {
+            const data = await api('/reviews/my-reviews');
+            target.innerHTML = data.reviews.length ? `<div class="review-list">${data.reviews.map(review => `<article class="review-item"><div class="review-item-head"><div><p class="event-meta">${escapeHtml(review.category)}</p><h2 class="event-title">${escapeHtml(review.title)}</h2><div>${starDisplay(review.rating)} <span class="review-status ${escapeHtml(review.status)}">${escapeHtml(review.status)}</span></div></div><time datetime="${escapeHtml(review.created_at)}">${escapeHtml(dateLabel(review.created_at.slice(0, 10)))}</time></div><p>${escapeHtml(review.comment || 'Rated without a written comment.')}</p><div class="review-form-actions" style="margin-top:16px"><a class="btn btn-small" href="../../event-details.html?id=${Number(review.event_id)}">Edit review</a><button class="btn btn-small btn-outline delete-my-review" type="button" data-id="${Number(review.id)}">Delete</button></div></article>`).join('')}</div>` : '<div class="empty-state"><i class="fa-regular fa-star"></i><h3>No reviews yet</h3><p>After attending an event, you can leave a rating and review.</p></div>';
+            if (!target.dataset.bound) {
+                target.dataset.bound = 'true';
+                target.addEventListener('click', async event => {
+                    const button = event.target.closest('.delete-my-review'); if (!button || !confirm('Delete this review?')) return;
+                    try { await api(`/reviews/${button.dataset.id}`, { method: 'DELETE' }); toast('Review deleted.'); initMyReviews(); }
                     catch (error) { toast(error.message, true); }
                 });
             }
@@ -197,6 +363,7 @@
             catch (error) { toast(error.message, true); }
         });
         loadOrganizerEvents();
+        initOrganizerReviews();
         const venueForm = document.querySelector('#create-venue-form');
         venueForm?.addEventListener('submit', async event => {
             event.preventDefault();
@@ -217,13 +384,45 @@
         } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
     }
 
+    function initOrganizerReviews() {
+        const target = document.querySelector('#organizer-reviews'); if (!target) return;
+        const form = document.querySelector('#organizer-review-filters');
+        if (form && !form.dataset.bound) {
+            form.dataset.bound = 'true';
+            form.addEventListener('submit', event => { event.preventDefault(); loadOrganizerReviews(); });
+        }
+        if (!target.dataset.bound) {
+            target.dataset.bound = 'true';
+            target.addEventListener('click', async event => {
+                const button = event.target.closest('.organizer-review-status'); if (!button) return;
+                try {
+                    await api(`/organizer/reviews/${button.dataset.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: button.dataset.status }) });
+                    toast(`Review ${button.dataset.status}.`);
+                    loadOrganizerReviews();
+                } catch (error) { toast(error.message, true); }
+            });
+        }
+        loadOrganizerReviews();
+    }
+
+    async function loadOrganizerReviews() {
+        const target = document.querySelector('#organizer-reviews'); if (!target) return;
+        const form = document.querySelector('#organizer-review-filters');
+        const params = form ? new URLSearchParams(new FormData(form)) : new URLSearchParams();
+        for (const [key, value] of [...params]) if (!value) params.delete(key);
+        try {
+            const data = await api(`/organizer/reviews${params.size ? `?${params}` : ''}`);
+            target.innerHTML = data.reviews.length ? `<div class="table-wrap"><table><thead><tr><th>Event</th><th>Attendee</th><th>Rating</th><th>Comment</th><th>Status</th><th>Permission</th></tr></thead><tbody>${data.reviews.map(review => `<tr><td>${escapeHtml(review.event_title)}</td><td>${escapeHtml(review.reviewer)}</td><td>${Number(review.rating)} / 5</td><td>${escapeHtml(review.comment || '—')}</td><td><span class="review-status ${escapeHtml(review.status)}">${escapeHtml(review.status)}</span></td><td><button class="btn btn-small organizer-review-status" data-id="${Number(review.id)}" data-status="approved">Approve</button> <button class="btn btn-small btn-outline organizer-review-status" data-id="${Number(review.id)}" data-status="rejected">Reject</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No reviews on your events yet.</div>';
+        } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
+    }
+
     async function initAdminDashboard() {
         const stats = document.querySelector('#admin-stats'); if (!stats) return;
         try {
             const data = await api('/admin/dashboard');
             stats.innerHTML = Object.entries({ 'Attendees': data.stats.users, 'Organizers': data.stats.organizers, 'Published events': data.stats.events, 'Confirmed bookings': data.stats.bookings, 'Demo revenue': money(data.stats.revenue), 'Needs review': data.stats.pending_events }).map(([label, value]) => `<div class="dashboard-stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
             document.querySelector('#admin-bookings').innerHTML = data.recent_bookings.map(row => `<tr><td>${escapeHtml(row.reference)}</td><td>${escapeHtml(row.attendee)}</td><td>${escapeHtml(row.title)}</td><td>${money(row.total_amount)}</td><td>${escapeHtml(row.status)}</td></tr>`).join('');
-            loadAdminEvents(); loadAdminUsers(); loadAdminReports(); loadAdminMessages(); initAdminCategories();
+            loadAdminEvents(); loadAdminUsers(); loadAdminReports(); loadAdminMessages(); initAdminCategories(); initAdminReviews();
         } catch (error) { stats.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
     }
 
@@ -304,6 +503,44 @@
         } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
     }
 
+    async function initAdminReviews() {
+        const target = document.querySelector('#admin-reviews'); if (!target) return;
+        const form = document.querySelector('#review-filters');
+        if (form && !form.dataset.bound) {
+            form.dataset.bound = 'true';
+            form.addEventListener('submit', event => { event.preventDefault(); loadAdminReviews(); });
+        }
+        loadAdminReviews();
+    }
+
+    async function loadAdminReviews() {
+        const target = document.querySelector('#admin-reviews'); if (!target) return;
+        const form = document.querySelector('#review-filters');
+        const params = form ? new URLSearchParams(new FormData(form)) : new URLSearchParams();
+        for (const [key, value] of [...params]) if (!value) params.delete(key);
+        try {
+            const data = await api(`/admin/reviews${params.size ? `?${params}` : ''}`);
+            target.innerHTML = data.reviews.length ? `<div class="table-wrap"><table><thead><tr><th>Event</th><th>Reviewer</th><th>Rating</th><th>Comment</th><th>Status</th><th>Moderate</th></tr></thead><tbody>${data.reviews.map(review => `<tr><td>${escapeHtml(review.event_title)} <small>#${Number(review.event_id)}</small></td><td>${escapeHtml(review.reviewer)}<br><small>${escapeHtml(review.email)}</small></td><td>${Number(review.rating)} / 5</td><td>${escapeHtml(review.comment || '—')}</td><td><span class="review-status ${escapeHtml(review.status)}">${escapeHtml(review.status)}</span></td><td><button class="btn btn-small review-moderate" data-id="${Number(review.id)}" data-status="approved">Approve</button> <button class="btn btn-small btn-outline review-moderate" data-id="${Number(review.id)}" data-status="rejected">Reject</button> <button class="btn btn-small btn-outline review-delete" data-id="${Number(review.id)}">Remove</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty-state">No reviews match these filters.</div>';
+            if (!target.dataset.bound) {
+                target.dataset.bound = 'true';
+                target.addEventListener('click', async event => {
+                    const moderate = event.target.closest('.review-moderate');
+                    const remove = event.target.closest('.review-delete');
+                    try {
+                        if (moderate) {
+                            await api(`/admin/reviews/${moderate.dataset.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: moderate.dataset.status }) });
+                            toast(`Review ${moderate.dataset.status}.`);
+                        } else if (remove && confirm('Permanently remove this review?')) {
+                            await api(`/admin/reviews/${remove.dataset.id}`, { method: 'DELETE' });
+                            toast('Review removed.');
+                        } else return;
+                        loadAdminReviews();
+                    } catch (error) { toast(error.message, true); }
+                });
+            }
+        } catch (error) { target.innerHTML = `<div class="error-state">${escapeHtml(error.message)}</div>`; }
+    }
+
     async function initNotifications() {
         const target = document.querySelector('#notifications'); if (!target) return;
         try {
@@ -338,6 +575,6 @@
     document.addEventListener('DOMContentLoaded', async () => {
         setShell();
         await session();
-        initHome(); initEvents(); initDetails(); initAuth(); initBooking(); initUserDashboard(); initOrganizerDashboard(); initAdminDashboard(); initNotifications(); initContact(); initProfile();
+        initHome(); initEvents(); initDetails(); initAuth(); initBooking(); initUserDashboard(); initOrganizerDashboard(); initAdminDashboard(); initNotifications(); initContact(); initProfile(); initWishlist(); initMyReviews();
     });
 })();

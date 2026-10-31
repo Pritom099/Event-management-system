@@ -387,6 +387,38 @@ img {
     box-shadow: var(--shadow);
 }
 
+.event-image-wrap {
+    position: relative;
+}
+
+.event-image-wrap .event-image {
+    display: block;
+}
+
+.wishlist-toggle {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .14);
+}
+
+.wishlist-toggle:hover,
+.wishlist-toggle.is-saved {
+    color: var(--coral);
+}
+
+.wishlist-toggle:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
 .event-image {
     width: 100%;
     aspect-ratio: 1.45;
@@ -407,6 +439,22 @@ img {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .05em;
+}
+
+.event-rating {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 9px;
+    font-size: .76rem;
+}
+
+.event-rating .star-display {
+    font-size: .72rem;
+}
+
+.event-rating-empty {
+    color: var(--muted);
 }
 
 .event-title {
@@ -440,6 +488,147 @@ img {
     margin-top: 20px;
     padding-top: 16px;
     border-top: 1px solid var(--line);
+}
+
+.review-summary {
+    display: grid;
+    grid-template-columns: minmax(190px, .7fr) 1.3fr;
+    gap: 32px;
+    margin: 24px 0 36px;
+    padding: 25px;
+    border: 1px solid var(--line);
+    background: var(--white);
+}
+
+.review-score {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.review-score strong {
+    font: 600 2.7rem var(--serif);
+}
+
+.star-display,
+.star-picker {
+    color: #ce7b22;
+}
+
+.review-distribution {
+    display: grid;
+    gap: 7px;
+}
+
+.review-distribution-row {
+    display: grid;
+    grid-template-columns: 35px minmax(80px, 1fr) 28px;
+    align-items: center;
+    gap: 10px;
+    font-size: .76rem;
+}
+
+.review-bar {
+    height: 8px;
+    background: #e8e8df;
+}
+
+.review-bar span {
+    display: block;
+    height: 100%;
+    background: #ce7b22;
+}
+
+.review-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, .8fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.review-list {
+    display: grid;
+    gap: 12px;
+}
+
+.review-item {
+    padding: 19px;
+    border: 1px solid var(--line);
+    background: var(--white);
+}
+
+.review-item-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.review-item p {
+    margin: 13px 0 0;
+    color: #62685e;
+    line-height: 1.65;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.review-form-panel {
+    padding: 23px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    scroll-margin-top: 110px;
+}
+
+.review-form-panel h3 {
+    margin: 0 0 18px;
+    font: 600 1.45rem var(--serif);
+}
+
+.star-picker {
+    display: flex;
+    gap: 5px;
+    margin: 8px 0 17px;
+}
+
+.star-choice {
+    padding: 5px;
+    border: 0;
+    background: transparent;
+    color: #9b9d93;
+    font-size: 1.35rem;
+}
+
+.star-choice.is-active {
+    color: #ce7b22;
+}
+
+.review-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.review-status {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #ecece5;
+    color: #5e6259;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.review-status.approved {
+    background: #e5eddc;
+    color: var(--moss);
+}
+
+.review-status.rejected {
+    background: #f8e4de;
+    color: #843e2f;
+}
+
+.wishlist-remove {
+    color: var(--coral);
 }
 
 .price {
@@ -1128,6 +1317,16 @@ th {
     .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .review-summary,
+    .review-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .review-summary {
+        gap: 20px;
+        padding: 19px;
+    }
 }
 
 @media (max-width: 640px) {
@@ -1326,4 +1525,24 @@ th {
     .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+.detail-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.detail-title-row .section-title {
+    overflow-wrap: anywhere;
+}
+
+.detail-wishlist {
+    position: static;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    box-shadow: none;
 }

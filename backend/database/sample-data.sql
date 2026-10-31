@@ -57,6 +57,27 @@ JOIN categories c ON c.slug = s.category_slug
 JOIN venues v ON v.name = s.venue_name AND v.city = 'Brooklyn'
 WHERE NOT EXISTS (SELECT 1 FROM events existing WHERE existing.slug = s.slug);
 
+INSERT INTO events (organizer_id, category_id, venue_id, title, slug, description, event_date, start_time, end_time, ticket_price, total_tickets, available_tickets, image_path, status)
+SELECT u.id, c.id, v.id, 'Local Stories: A Neighborhood Evening', 'sample-review-evening', 'A completed demo event reserved for testing the attendee review and moderation workflow.', DATE_SUB(CURDATE(), INTERVAL 7 DAY), '18:00', '20:00', 20.00, 30, 29, 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=82', 'published'
+FROM users u
+JOIN categories c ON c.slug = 'community'
+JOIN venues v ON v.name = 'The Glasshouse' AND v.city = 'Brooklyn'
+WHERE u.email = 'host@gather.local'
+  AND NOT EXISTS (SELECT 1 FROM events WHERE slug = 'sample-review-evening');
+
+INSERT INTO bookings (reference, user_id, event_id, quantity, unit_price, total_amount, status, created_at)
+SELECT 'SAMPLE-REVIEW-BOOKING', u.id, e.id, 1, e.ticket_price, e.ticket_price, 'confirmed', DATE_SUB(TIMESTAMP(e.event_date, e.start_time), INTERVAL 3 DAY)
+FROM users u
+JOIN events e ON e.slug = 'sample-review-evening'
+WHERE u.email = 'guest@gather.local'
+  AND NOT EXISTS (SELECT 1 FROM bookings WHERE reference = 'SAMPLE-REVIEW-BOOKING');
+
+INSERT INTO payments (booking_id, provider, transaction_reference, amount, status, paid_at, created_at)
+SELECT b.id, 'demo', 'SAMPLE-REVIEW-PAYMENT', b.total_amount, 'succeeded', b.created_at, b.created_at
+FROM bookings b
+WHERE b.reference = 'SAMPLE-REVIEW-BOOKING'
+  AND NOT EXISTS (SELECT 1 FROM payments WHERE transaction_reference = 'SAMPLE-REVIEW-PAYMENT');
+
 INSERT INTO event_schedules (event_id, starts_at, ends_at, title, details)
 SELECT id, TIMESTAMP(event_date, start_time), DATE_ADD(TIMESTAMP(event_date, start_time), INTERVAL 45 MINUTE), 'Doors & welcome', 'Settle in and meet the host.'
 FROM events

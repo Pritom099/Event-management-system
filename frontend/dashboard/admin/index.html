@@ -67,6 +67,20 @@
                 </form>
                 <div id="admin-categories">Loading categories…</div>
             </div>
+            <div class="dashboard-panel">
+                <h2>Review moderation</h2>
+                <form id="review-filters" class="filter-bar">
+                    <input type="number" name="event_id" min="1" aria-label="Filter by event ID" placeholder="Event ID">
+                    <select name="status" aria-label="Review status">
+                        <option value="">All statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="btn btn-small" type="submit">Filter reviews</button>
+                </form>
+                <div id="admin-reviews">Loading reviews…</div>
+            </div>
         </section>
     </main>
 </body>

@@ -22,7 +22,11 @@ function route_api(PDO $pdo, string $method, string $path): void
     bookings_route($pdo, $method, $path);
     payments_route($pdo, $method, $path);
     venues_route($pdo, $method, $path);
+    wishlist_route($pdo, $method, $path);
+    reviews_route($pdo, $method, $path);
+    organizer_reviews_route($pdo, $method, $path);
     admin_route($pdo, $method, $path);
+    admin_reviews_route($pdo, $method, $path);
     if ($method === 'GET' && $path === '/notifications') {
         $user = require_user();
         $query = $pdo->prepare('SELECT id, title, body, read_at, created_at FROM notifications WHERE user_id=? ORDER BY created_at DESC LIMIT 50');
