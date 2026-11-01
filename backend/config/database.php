@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 function db(): PDO
@@ -8,10 +9,15 @@ function db(): PDO
         return $pdo;
     }
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $name = getenv('DB_NAME') ?: 'event_management';
-    $user = getenv('DB_USER') ?: 'root';
-    $password = getenv('DB_PASSWORD') ?: '';
+    $localConfigPath = __DIR__ . '/database.local.php';
+    $localConfig = is_file($localConfigPath) ? require $localConfigPath : [];
+    if (!is_array($localConfig)) {
+        $localConfig = [];
+    }
+    $host = $localConfig['DB_HOST'] ?? (getenv('DB_HOST') ?: '127.0.0.1');
+    $name = $localConfig['DB_NAME'] ?? (getenv('DB_NAME') ?: 'event_management');
+    $user = $localConfig['DB_USER'] ?? (getenv('DB_USER') ?: 'root');
+    $password = $localConfig['DB_PASSWORD'] ?? (getenv('DB_PASSWORD') ?: '');
     $pdo = new PDO(
         "mysql:host={$host};dbname={$name};charset=utf8mb4",
         $user,

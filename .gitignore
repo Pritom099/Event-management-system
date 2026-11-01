@@ -1,0 +1,3 @@
+/backend/config/database.local.php
+/backend/uploads/*
+!/backend/uploads/.htaccess

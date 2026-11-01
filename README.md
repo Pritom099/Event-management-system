@@ -20,6 +20,7 @@ Gather is an academic event discovery and management application. Its frontend u
 - [Technology](#technology)
 - [Project Layout](#project-layout)
 - [Quick Start](#quick-start)
+- [InfinityFree Deployment](#infinityfree-deployment)
 - [Demo Accounts](#demo-accounts)
 - [API Reference](#api-reference)
 - [Database](#database)
@@ -115,6 +116,33 @@ The defaults in `backend/config/database.php` match a standard local XAMPP insta
 If your MySQL credentials differ, set `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in the Apache/PHP environment. `backend/.env.example` lists the variables; PHP does not load `.env` files automatically.
 
 Ensure PHP has `pdo_mysql`, `fileinfo`, and `mbstring` enabled. Apache needs write access to `backend/uploads` for event image uploads.
+
+## InfinityFree Deployment
+
+This project can run on InfinityFree's PHP/MySQL hosting. Deployment must be completed from your own InfinityFree control panel; do not send hosting passwords or database credentials in chat.
+
+1. Create an InfinityFree account and a hosting account/subdomain in its client area.
+2. In the hosting Control Panel, create a MySQL database. Copy the exact **MySQL hostname**, database name, username, and password shown there. InfinityFree database names are prefixed; do not use `localhost` or the XAMPP defaults.
+3. Open that database in phpMyAdmin, select it, and import `backend/database/schema.infinityfree.sql`. This file has no `CREATE DATABASE` or `USE` statement and does not create a public default admin.
+4. In the project, copy `backend/config/database.local.example.php` to `backend/config/database.local.php`. Put the four values from the InfinityFree panel into the new file. That local file is in `.gitignore`; upload it separately with InfinityFree File Manager/FTP and never commit or share it.
+5. Upload the project contents into the hosting account's `htdocs` directory. Keep the structure intact: `index.html`, `frontend/`, and `backend/` must all be directly inside `htdocs`. Do not upload `.git/` or the local XAMPP database.
+6. Enable HTTPS in the hosting panel and open the assigned InfinityFree domain. Use the same origin for frontend and API; the existing relative API URL will then point to `backend/index.php/api` on that domain.
+7. Check PHP has `pdo_mysql`, `fileinfo`, and `mbstring` enabled. Verify `backend/uploads/` is writable if organizers need image uploads.
+
+### Create the First Administrator
+
+The InfinityFree schema intentionally does not seed `admin@gather.local` / `password`. Register through the site as an attendee using a private email and a strong password. Then, in that selected InfinityFree database's phpMyAdmin SQL tab, promote only that account:
+
+```sql
+UPDATE users
+SET role = 'admin'
+WHERE email = 'your-private-admin@example.com'
+	AND role = 'attendee';
+```
+
+Sign out and back in so the session picks up the admin role. Register organizer and attendee accounts normally from the site. Do not import `sample-data.sql` on a public deployment: it contains intentionally weak classroom passwords and demo events.
+
+After deployment, test registration, login, event listing, a demo booking, wishlist, review submission after payment, and organizer approval. Checkout remains a demonstration only and does not process real payments. I cannot create an InfinityFree account or upload files to it without you operating the hosting account; the files and setup steps here are prepared for that upload.
 
 ### 5. Open Gather
 
