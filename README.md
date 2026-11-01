@@ -121,12 +121,12 @@ Ensure PHP has `pdo_mysql`, `fileinfo`, and `mbstring` enabled. Apache needs wri
 
 This project can run on InfinityFree's PHP/MySQL hosting. Deployment must be completed from your own InfinityFree control panel; do not send hosting passwords or database credentials in chat.
 
-1. Create an InfinityFree account and a hosting account/subdomain in its client area.
-2. In the hosting Control Panel, create a MySQL database. Copy the exact **MySQL hostname**, database name, username, and password shown there. InfinityFree database names are prefixed; do not use `localhost` or the XAMPP defaults.
+1. Activate the InfinityFree hosting account for `new-file.free.nf` in its client area. The panel warns that new-domain DNS may take up to 72 hours to propagate.
+2. In the hosting Control Panel, create a MySQL database. The current panel values shown are host `sql208.infinityfree.com`, database `if0_43329442_db_event`, and user `if0_43329442`. Use the latest values from the panel if they change. Do not use `localhost` or the XAMPP defaults.
 3. Open that database in phpMyAdmin, select it, and import `backend/database/schema.infinityfree.sql`. This file has no `CREATE DATABASE` or `USE` statement and does not create a public default admin.
-4. In the project, copy `backend/config/database.local.example.php` to `backend/config/database.local.php`. Put the four values from the InfinityFree panel into the new file. That local file is in `.gitignore`; upload it separately with InfinityFree File Manager/FTP and never commit or share it.
-5. Upload the project contents into the hosting account's `htdocs` directory. Keep the structure intact: `index.html`, `frontend/`, and `backend/` must all be directly inside `htdocs`. Do not upload `.git/` or the local XAMPP database.
-6. Enable HTTPS in the hosting panel and open the assigned InfinityFree domain. Use the same origin for frontend and API; the existing relative API URL will then point to `backend/index.php/api` on that domain.
+4. Copy `backend/config/database.local.example.php` to `backend/config/database.local.php`. Enter the current database password in the private copy only. That local file is in `.gitignore`; upload it separately and never commit or share it. The password in the earlier screenshot was exposed, so rotate it in InfinityFree before using it.
+5. Upload the project contents into the hosting account's `htdocs` directory. InfinityFree free hosting uses its File Manager or FTP; SFTP/SSH is not available on the free plan. Keep the structure intact: `index.html`, `frontend/`, and `backend/` must all be directly inside `htdocs`. Do not upload `.git/` or the local XAMPP database.
+6. Enable HTTPS in the hosting panel and open `https://new-file.free.nf/` after DNS has propagated. Use the same origin for frontend and API; the existing relative API URL will then point to `backend/index.php/api` on that domain.
 7. Check PHP has `pdo_mysql`, `fileinfo`, and `mbstring` enabled. Verify `backend/uploads/` is writable if organizers need image uploads.
 
 ### Create the First Administrator
